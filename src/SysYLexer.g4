@@ -1,4 +1,5 @@
-grammar SysY;
+//grammar SysY;
+lexer grammar SysYLexer;
 
 //prog : stat* EOF;	//语法需要以;结尾
 //
