@@ -21,7 +21,7 @@ public class VerboseListener extends BaseErrorListener {
 //                offendingSymbol+": "+msg);
         CommonToken token = (CommonToken) offendingSymbol;
         entered=true;
-        System.err.println("Error type A at Line "+line+":Mysterious character \""+token.getText()+"\".");
+        System.err.println("Error type A at Line "+line+": Mysterious character \""+token.getText()+"\".");
     }
 
     public boolean getEntered(){
