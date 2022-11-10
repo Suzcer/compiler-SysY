@@ -18,7 +18,7 @@ public class Main
             public void notifyListeners(LexerNoViableAltException e) {
                 err[0] = true;
                 String text = _input.getText(Interval.of(_tokenStartCharIndex, _input.index()));
-                System.err.println("Error type A at Line " + _tokenStartLine + ": Mysterious character " + text + ".");
+                System.err.println("Error type A at Line " + _tokenStartLine + ": Mysterious character \"" + text + "\".");
             }
         };
 
