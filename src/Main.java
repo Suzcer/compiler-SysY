@@ -36,8 +36,8 @@ public class Main
 
         //Step4: getAllTokens And Output
 //        if(!err[0]){
+        List<? extends Token> allTokens = sysYLexer.getAllTokens();
         if(!listener.getEntered()){
-            List<? extends Token> allTokens = sysYLexer.getAllTokens();
             for (Token token : allTokens) {
                 String symbolicName = vocabulary.getSymbolicName(token.getType());
                 System.err.println(symbolicName + " " + token.getText() + " at Line " + token.getLine()+".");
