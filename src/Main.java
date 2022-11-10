@@ -22,7 +22,7 @@ public class Main
         //Step4: getAllTokens And Output
         List<? extends Token> allTokens = sysYLexer.getAllTokens();
         for (Token token : allTokens) {
-            System.err.println(token.getType() + " " + token.getText() + " at Line " + token.getLine()+".");
+            System.out.println(token.getType() + " " + token.getText() + " at Line " + token.getLine()+".");
         }
 
     }
