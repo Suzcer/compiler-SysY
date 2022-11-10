@@ -1,5 +1,7 @@
-import org.antlr.v4.runtime.*;
-import org.antlr.v4.runtime.misc.Interval;
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.Vocabulary;
 
 import java.io.IOException;
 import java.util.List;
@@ -14,24 +16,27 @@ public class Main
         CharStream input = CharStreams.fromFileName(source);
         final boolean[] err = {false};
 
-        SysYLexer sysYLexer = new SysYLexer(input){
-            @Override
-            public void notifyListeners(LexerNoViableAltException e) {
-                err[0] = true;
-                String text = _input.getText(Interval.of(_tokenStartCharIndex, _input.index()));
+        SysYLexer sysYLexer = new SysYLexer(input)
+//        {
+//            @Override
+//            public void notifyListeners(LexerNoViableAltException e) {
+//                err[0] = true;
+//                String text = _input.getText(Interval.of(_tokenStartCharIndex, _input.index()));
 //                System.err.println("Error type A at Line " + _tokenStartLine + ": Mysterious character \"" + text + "\".");
-            }
-        };
+//            }
+//        }
+        ;
 
         Vocabulary vocabulary = sysYLexer.getVocabulary();
 
         //Add Error Listener
-//        sysYLexer.removeErrorListeners();
-//        VerboseListener listener = new VerboseListener();
-//        sysYLexer.addErrorListener(listener);
+        sysYLexer.removeErrorListeners();
+        VerboseListener listener = new VerboseListener();
+        sysYLexer.addErrorListener(listener);
 
         //Step4: getAllTokens And Output
-        if(!err[0]){
+//        if(!err[0]){
+        if(!listener.getEntered()){
             List<? extends Token> allTokens = sysYLexer.getAllTokens();
             for (Token token : allTokens) {
                 String symbolicName = vocabulary.getSymbolicName(token.getType());
