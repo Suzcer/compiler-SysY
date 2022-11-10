@@ -106,9 +106,9 @@ INTEGR_CONST :DECIMAL | OCTAL |HEXADECIMAL
 
 WS: [ \r\n\t]+ ->skip;
 
-LINE_COMMENT: '//' .*? '\n';
+LINE_COMMENT: '//' .*? '\n' ->skip;
 
-MULTILINE_COMMENT:'/*' .*? '*/';
+MULTILINE_COMMENT:'/*' .*? '*/' ->skip;
 
 fragment LETTER: [a-zA-Z];
 
