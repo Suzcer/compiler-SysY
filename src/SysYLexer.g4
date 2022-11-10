@@ -33,7 +33,6 @@ lexer grammar SysYLexer;
 //fragment LETTER : [a-zA-Z] ;
 //fragment DIGIT : [0-9] ;
 
-//
 CONST : 'const';
 
 INT : 'int';
@@ -119,4 +118,4 @@ fragment OCTAL: '0'[0-7]+;
 
 fragment HEXADECIMAL: '0'('x'|'X')[0-9a-fA-F]+;
 
-fragment DIGIT:     [0-9];
+fragment DIGIT: [0-9];
