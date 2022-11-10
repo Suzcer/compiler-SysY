@@ -68,14 +68,11 @@ FLAG0=$?
 
 TIME=$(echo $RES | sed 's/,/\n/g' | grep "createdAt" | sed 's/:/\n/g' | sed '1d' | sed 's/}//g' | sed 's/\"//g')
 
-echo $FLAG0
+if [[ $FLAG0 -ne 0 || -z $TIME ]]; then
+  echo ""
+  echo "T_T Commit Fail! T_T"
+else
+  echo ""
+  echo "^v^ Commit Success! ^v^ "
+fi
 
-echo $TIME
-
-# if [[ $FLAG0 -ne 0 || -z $TIME ]]; then
-#   echo ""
-#   echo "T_T Commit Fail! T_T"
-# else
-#   echo ""
-#   echo "^v^ Commit Success! ^v^ "
-# fi
