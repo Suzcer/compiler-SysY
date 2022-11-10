@@ -20,14 +20,16 @@ public class Main
 
         //Add Error Listener
         sysYLexer.removeErrorListeners();
-        sysYLexer.addErrorListener(new VerboseListener());
+        VerboseListener listener = new VerboseListener();
+        sysYLexer.addErrorListener(listener);
 
         //Step4: getAllTokens And Output
-        List<? extends Token> allTokens = sysYLexer.getAllTokens();
-        for (Token token : allTokens) {
-            String symbolicName = vocabulary.getSymbolicName(token.getType());
-            System.err.println(symbolicName + " " + token.getText() + " at Line " + token.getLine()+".");
+        if(!listener.getEntered()){
+            List<? extends Token> allTokens = sysYLexer.getAllTokens();
+            for (Token token : allTokens) {
+                String symbolicName = vocabulary.getSymbolicName(token.getType());
+                System.err.println(symbolicName + " " + token.getText() + " at Line " + token.getLine()+".");
+            }
         }
-
     }
 }

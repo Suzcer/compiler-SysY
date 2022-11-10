@@ -3,6 +3,9 @@ import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
 
 public class VerboseListener extends BaseErrorListener {
+
+    private boolean entered=false;
+
     @Override
     public void syntaxError(Recognizer<?, ?> recognizer,
                             Object offendingSymbol,
@@ -15,7 +18,11 @@ public class VerboseListener extends BaseErrorListener {
 //        System.err.println("rule stack: "+stack);
 //        System.err.println("line "+line+":"+charPositionInLine+" at "+
 //                offendingSymbol+": "+msg);
-        System.err.println("Error");
+        entered=true;
+        System.err.println("Error type A at Line "+line+":Mysterious character "+".");
     }
 
+    public boolean getEntered(){
+        return entered;
+    }
 }
