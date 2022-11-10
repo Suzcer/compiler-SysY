@@ -40,10 +40,18 @@ public class Main
         if(!listener.getEntered()){
             for (Token token : allTokens) {
                 String symbolicName = vocabulary.getSymbolicName(token.getType());
-
-//                if(symbolicName.charAt())
-
-                System.err.println(symbolicName + " " + token.getText() + " at Line " + token.getLine()+".");
+                String text = token.getText();
+                if(text.charAt(0)=='0'&& text.length()>=2){
+                    int i;
+                    if(text.charAt(1)=='x'||text.charAt(1)=='X'){
+                        i = Integer.parseInt(text.substring(2), 16);
+                    }else{
+                        i = Integer.parseInt(text, 8);
+                    }
+                    System.err.println(symbolicName+ " " + i+ " at Line " + token.getLine()+".");
+                }else{
+                    System.err.println(symbolicName + " " + token.getText() + " at Line " + token.getLine()+".");
+                }
             }
         }
     }
