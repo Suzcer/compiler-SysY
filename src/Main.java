@@ -40,6 +40,9 @@ public class Main
         if(!listener.getEntered()){
             for (Token token : allTokens) {
                 String symbolicName = vocabulary.getSymbolicName(token.getType());
+
+//                if(symbolicName.charAt())
+
                 System.err.println(symbolicName + " " + token.getText() + " at Line " + token.getLine()+".");
             }
         }
