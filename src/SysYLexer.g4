@@ -104,7 +104,7 @@ INTEGR_CONST :DECIMAL | OCTAL |HEXADECIMAL
 //数字常量，包含十进制数，0开头的八进制数，0x或0X开头的十六进制数
    ;
 
-WS: [ \r\n\t]+;
+WS: [ \r\n\t]+ ->skip;
 
 LINE_COMMENT: '//' .*? '\n';
 
