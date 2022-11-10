@@ -15,6 +15,7 @@ public class Main
         final boolean[] err = {false};
 
         SysYLexer sysYLexer = new SysYLexer(input){
+            @Override
             public void notifyListeners(LexerNoViableAltException e) {
                 err[0] = true;
                 String text = _input.getText(Interval.of(_tokenStartCharIndex, _input.index()));
