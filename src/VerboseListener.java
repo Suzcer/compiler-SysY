@@ -19,7 +19,7 @@ public class VerboseListener extends BaseErrorListener {
 //        System.err.println("line "+line+":"+charPositionInLine+" at "+
 //                offendingSymbol+": "+msg);
         entered=true;
-//        System.err.println("Error type A at Line "+line+":Mysterious character "+".");
+        System.err.println("Error type A at Line "+line+":Mysterious character "+".");
     }
 
     public boolean getEntered(){
