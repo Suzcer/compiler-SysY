@@ -14,7 +14,7 @@ public class Main
         }
         String source = args[0];
         CharStream input = CharStreams.fromFileName(source);
-        final boolean[] err = {false};
+//        final boolean[] err = {false};
 
         SysYLexer sysYLexer = new SysYLexer(input)
 //        {
