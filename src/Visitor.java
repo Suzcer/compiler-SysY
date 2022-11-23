@@ -33,7 +33,7 @@ public class Visitor extends SysYParserBaseVisitor<Void>{
     @Override
     public Void visitChildren(RuleNode node) {
         String ruleName = ruleNames[node.getRuleContext().getRuleIndex()];
-        for(int i=0;i+1<node.getRuleContext().depth();i++) System.out.print("  ");
+        for(int i=0;i+1<node.getRuleContext().depth();i++) System.err.print("  ");
         System.err.println(captureName(ruleName));
         return super.visitChildren(node);
     }

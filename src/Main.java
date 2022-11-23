@@ -88,8 +88,8 @@ public class Main {
         visitor.setRulesName(ruleNames);
         visitor.setVocabulary(vocabulary);
         visitor.setMp(mp);
-
-        visitor.visit(tree);
-
+        if(!listener.getEntered()){
+            visitor.visit(tree);
+        }
     }
 }
