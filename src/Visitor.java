@@ -38,6 +38,19 @@ public class Visitor extends SysYParserBaseVisitor<Void>{
         return super.visitChildren(node);
     }
 
+    public String baseTrans(String text){
+        if(text.charAt(0)=='0'&& text.length()>=2){
+            int i;
+            if(text.charAt(1)=='x'||text.charAt(1)=='X'){
+                i=Integer.parseInt(text.substring(2),16 );
+            }else {
+                i=Integer.parseInt(text,8);
+            }
+            return String.valueOf(i);
+        }else{
+            return text;
+        }
+    }
     //打印终结符及终结符的高亮
     @Override
     public Void visitTerminal(TerminalNode node) {
@@ -51,7 +64,7 @@ public class Visitor extends SysYParserBaseVisitor<Void>{
                     System.err.print("  ");
             }
 
-            System.err.print(node.getText()+" ");
+            System.err.print(baseTrans(node.getText())+" ");
             System.err.print(type);
             System.err.println("["+mp.get(type)+"]");
         }
