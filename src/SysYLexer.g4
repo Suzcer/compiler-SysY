@@ -1,37 +1,4 @@
-//grammar SysY;
 lexer grammar SysYLexer;
-//grammar SysYLexer;
-
-//prog : stat* EOF;	//语法需要以;结尾
-//
-//stat : expr ';'
-//     | ID '=' expr ';'
-//  	 | 'if' expr ';'
-//     ;
-//
-////递归的描述表达式
-////|:or
-////():subrule
-//expr : expr('*'|'/') expr //一个表达式由两个表达式通过*或/连接
-//		 | expr('+'|'-') expr	//+或-连接但优先级低于*和/
-//  	 | ID
-//  	 | INT
-//  	 ;
-
-//第一个字符为字母或下划线，之后为任意多个的字母数字下划线
-//ID : (LETTER|'_')(LETTER|DIGIT|'_')* ;
-//
-//INT : '0'|([1-9]DIGIT*) ;
-//
-//WS : [ \t\r\n]+ ->skip ;
-//
-////单行注释
-////.通配符
-//SL_COMMENT : '//' .*? '\n';
-//
-////fragment:当识别到单独的字母或数字时不是token
-//fragment LETTER : [a-zA-Z] ;
-//fragment DIGIT : [0-9] ;
 
 CONST : 'const';
 
@@ -97,25 +64,40 @@ COMMA : ',';
 
 SEMICOLON : ';';
 
-IDENT : ('_'|LETTER)('_'|LETTER|DIGIT)*;
-//以下划线或字母开头，仅包含下划线、英文字母大小写、阿拉伯数字
-
-INTEGR_CONST :DECIMAL | OCTAL |HEXADECIMAL
-//数字常量，包含十进制数，0开头的八进制数，0x或0X开头的十六进制数
+IDENT
+   : [_a-zA-Z] [_a-zA-Z0-9]*
    ;
 
-WS: [ \r\n\t]+ ->skip;
+INTEGR_CONST
+   : DECIMAL_CONST
+   | OCTAL_CONST
+   | HEXADECIMAL_CONST
+   ;
 
-LINE_COMMENT: '//' .*? '\n' ->skip;
+fragment
+DECIMAL_CONST
+   : '0'
+   | [1-9] [0-9]*
+   ;
 
-MULTILINE_COMMENT:'/*' .*? '*/' ->skip;
+fragment
+OCTAL_CONST:
+   '0' [0-7]+
+   ;
 
-fragment LETTER: [a-zA-Z];
+fragment
+HEXADECIMAL_CONST
+   : ('0x' | '0X') [a-fA-F0-9]+
+   ;
 
-fragment DECIMAL : '0'|([1-9]DIGIT*) ;
+WS
+   : [ \r\n\t]+ -> skip
+   ;
 
-fragment OCTAL: '0'[0-7]+;
+LINE_COMMENT
+   : '//' .*? '\n' -> skip
+   ;
 
-fragment HEXADECIMAL: '0'('x'|'X')[0-9a-fA-F]+;
-
-fragment DIGIT: [0-9];
+MULTILINE_COMMENT
+   : '/*' .*? '*/' -> skip
+   ;
