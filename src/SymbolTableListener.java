@@ -10,8 +10,8 @@ public class SymbolTableListener extends SysYParserBaseListener {
 
     private int localScopeCounter = 0;
 
-    private void report(int errType,int lineNo){
-        System.err.println("Error type "+errType+" at Line "+lineNo+":");
+    private void report(int errType, int lineNo) {
+        System.err.println("Error type " + errType + " at Line " + lineNo + ":");
     }
 
     /**
@@ -27,13 +27,16 @@ public class SymbolTableListener extends SysYParserBaseListener {
     public void enterFuncDef(SysYParser.FuncDefContext ctx) {
 
         String typeName = ctx.funcType().getText();
-        globalScope.resolve(typeName);//解析类型名，要去全局的作用域解析
+        Type retType = (Type) globalScope.resolve(typeName);//解析类型名，要去全局的作用域解析
 
         String funName = ctx.IDENT().getText();
-        FunctionSymbol fun = new FunctionSymbol(funName, currentScope);
+        Symbol tmp = currentScope.getSymbols().get(funName);
+        if (tmp != null) report(4, ctx.IDENT().getSymbol().getLine());
 
+        FunctionSymbol fun = new FunctionSymbol(funName, currentScope);
         currentScope.define(fun);
         currentScope = fun;
+
     }
 
     // block & blockStmt 应该一致
@@ -73,11 +76,27 @@ public class SymbolTableListener extends SysYParserBaseListener {
         String typeName = ctx.bType().getText();
         Type type = (Type) globalScope.resolve(typeName);
         List<SysYParser.VarDefContext> varDefContexts = ctx.varDef();
-        for(SysYParser.VarDefContext var_ctx:varDefContexts){
+        for (SysYParser.VarDefContext var_ctx : varDefContexts) {
             String varName = var_ctx.IDENT().getText();
             Symbol tmp = currentScope.getSymbols().get(varName);
-            if(tmp!=null)report(3,var_ctx.IDENT().getSymbol().getLine());
-            else{
+            if (tmp != null) report(3, var_ctx.IDENT().getSymbol().getLine());
+            else {
+                VariableSymbol symbol = new VariableSymbol(varName, type);
+                currentScope.define(symbol);
+            }
+        }
+    }
+
+    @Override
+    public void enterConstDecl(SysYParser.ConstDeclContext ctx) {
+        String typeName = ctx.bType().getText();
+        Type type = (Type) globalScope.resolve(typeName);
+        List<SysYParser.ConstDefContext> constDefContexts = ctx.constDef();
+        for (SysYParser.ConstDefContext const_ctx : constDefContexts) {
+            String varName = const_ctx.IDENT().getText();
+            Symbol tmp = currentScope.getSymbols().get(varName);
+            if (tmp != null) report(3, const_ctx.IDENT().getSymbol().getLine());
+            else {
                 VariableSymbol symbol = new VariableSymbol(varName, type);
                 currentScope.define(symbol);
             }
@@ -88,26 +107,28 @@ public class SymbolTableListener extends SysYParserBaseListener {
     public void exitLVal(SysYParser.LValContext ctx) {
         String varName = ctx.IDENT().getText();
         Symbol symbol = currentScope.resolve(varName);
-        if(symbol==null)
-            report(1,ctx.IDENT().getSymbol().getLine());
+        if (symbol == null)
+            report(1, ctx.IDENT().getSymbol().getLine());
     }
 
     @Override
     public void enterCallFuncExp(SysYParser.CallFuncExpContext ctx) {
         String varName = ctx.IDENT().getText();
         Symbol symbol = currentScope.resolve(varName);
-        if(symbol==null)
-            report(4,ctx.IDENT().getSymbol().getLine());
+        if (symbol == null)
+            report(2, ctx.IDENT().getSymbol().getLine());
     }
 
-    /** 函数形参 **/
+    /**
+     * 函数形参
+     **/
     @Override
     public void exitFuncFParam(SysYParser.FuncFParamContext ctx) {
         String typeName = ctx.bType().getText();
         Type type = (Type) globalScope.resolve(typeName);
 
         String varName = ctx.IDENT().getText();
-        VariableSymbol symbol=new VariableSymbol(varName,type);
+        VariableSymbol symbol = new VariableSymbol(varName, type);
         currentScope.define(symbol);
     }
 
