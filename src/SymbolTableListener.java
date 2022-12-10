@@ -70,8 +70,13 @@ public class SymbolTableListener extends SysYParserBaseListener {
         Type type = (Type) globalScope.resolve(typeName);
         List<SysYParser.VarDefContext> varDefContexts = ctx.varDef();
         for(SysYParser.VarDefContext var_ctx:varDefContexts){
-            VariableSymbol symbol = new VariableSymbol(var_ctx.IDENT().getText(), type);
-            currentScope.define(symbol);
+            String varName = var_ctx.IDENT().getText();
+            Symbol tmp = currentScope.getSymbols().get(varName);
+            if(tmp!=null) System.err.println("Error type 3 at Line "+var_ctx.IDENT().getSymbol().getLine()+":");
+            else{
+                VariableSymbol symbol = new VariableSymbol(varName, type);
+                currentScope.define(symbol);
+            }
         }
     }
 
