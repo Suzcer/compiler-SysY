@@ -3,6 +3,7 @@ import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Vocabulary;
 import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -16,32 +17,6 @@ public class Main {
         CharStream input = CharStreams.fromFileName(source);
 
         SysYLexer sysYLexer = new SysYLexer(input);
-//
-//        Vocabulary vocabulary = sysYLexer.getVocabulary();
-//
-//        //Add Error Listener
-//        sysYLexer.removeErrorListeners();
-//        VerboseListener listener = new VerboseListener();
-//        sysYLexer.addErrorListener(listener);
-//
-//        List<? extends Token> allTokens = sysYLexer.getAllTokens();
-//        if(!listener.getEntered()){
-//            for (Token token : allTokens) {
-//                String symbolicName = vocabulary.getSymbolicName(token.getType());
-//                String text = token.getText();
-//                if(text.charAt(0)=='0'&& text.length()>=2){
-//                    int i;
-//                    if(text.charAt(1)=='x'||text.charAt(1)=='X'){
-//                        i = Integer.parseInt(text.substring(2), 16);
-//                    }else{
-//                        i = Integer.parseInt(text, 8);
-//                    }
-//                    System.err.println(symbolicName+ " " + i+ " at Line " + token.getLine()+".");
-//                }else{
-//                    System.err.println(symbolicName + " " + token.getText() + " at Line " + token.getLine()+".");
-//                }
-//            }
-//        }
 
         /*
             以下是lab2中语法分析器的内容。
@@ -88,8 +63,20 @@ public class Main {
         visitor.setRulesName(ruleNames);
         visitor.setVocabulary(vocabulary);
         visitor.setMp(mp);
+
+//        int lineNo = Integer.parseInt(args[1]);
+//        int column = Integer.parseInt(args[2]);
+//        String name = args[3];
+        ParseTreeWalker walker = new ParseTreeWalker();
+        SymbolTableListener symtableListener = new SymbolTableListener();
+
         if(!listener.getEntered()){
-            visitor.visit(tree);
+
+//            visitor.visit(tree);
+            walker.walk(symtableListener,tree);
+
         }
     }
+
+
 }

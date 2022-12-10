@@ -1,0 +1,20 @@
+package symtable;
+
+import java.util.Map;
+
+public interface Scope {
+    public String getName();
+
+    public void setName(String name);
+
+    /** 获取父作用域 **/
+    public Scope getEnclosingScope();
+
+    public Map<String, Symbol> getSymbols();
+
+    /** 把新碰到的变量放进符号表  **/
+    public void define(Symbol symbol);
+
+    /** 比如a=b；这条语句，要找b具体指的是哪个b，即解析 **/
+    public Symbol resolve(String name);
+}
