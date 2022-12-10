@@ -10,6 +10,10 @@ public class SymbolTableListener extends SysYParserBaseListener {
 
     private int localScopeCounter = 0;
 
+    private void report(int errType,int lineNo){
+        System.err.println("Error type "+errType+" at Line "+lineNo+":");
+    }
+
     /**
      * 1. 开启作用域
      */
@@ -72,7 +76,7 @@ public class SymbolTableListener extends SysYParserBaseListener {
         for(SysYParser.VarDefContext var_ctx:varDefContexts){
             String varName = var_ctx.IDENT().getText();
             Symbol tmp = currentScope.getSymbols().get(varName);
-            if(tmp!=null) System.err.println("Error type 3 at Line "+var_ctx.IDENT().getSymbol().getLine()+":");
+            if(tmp!=null)report(3,var_ctx.IDENT().getSymbol().getLine());
             else{
                 VariableSymbol symbol = new VariableSymbol(varName, type);
                 currentScope.define(symbol);
@@ -85,7 +89,15 @@ public class SymbolTableListener extends SysYParserBaseListener {
         String varName = ctx.IDENT().getText();
         Symbol symbol = currentScope.resolve(varName);
         if(symbol==null)
-            System.err.println("Error type 1 at Line "+ctx.IDENT().getSymbol().getLine()+":");
+            report(1,ctx.IDENT().getSymbol().getLine());
+    }
+
+    @Override
+    public void enterCallFuncExp(SysYParser.CallFuncExpContext ctx) {
+        String varName = ctx.IDENT().getText();
+        Symbol symbol = currentScope.resolve(varName);
+        if(symbol==null)
+            report(4,ctx.IDENT().getSymbol().getLine());
     }
 
     /** 函数形参 **/

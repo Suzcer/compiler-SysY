@@ -37,21 +37,21 @@ block : L_BRACE (blockItem)*R_BRACE;
 blockItem : decl| stmt;
 
 stmt: lVal ASSIGN exp SEMICOLON 			#AssignStmt
-      | (exp)? SEMICOLON				#ExpStmt
-      | block						#BlockStmt
+      | (exp)? SEMICOLON				    #ExpStmt
+      | block						        #BlockStmt
       | IF L_PAREN cond R_PAREN stmt (ELSE stmt)?	#IfStmt
-      | WHILE L_PAREN cond R_PAREN stmt			#WhileStmt
-      | BREAK SEMICOLON					#BreakStmt
-      | CONTINUE SEMICOLON				#ContinueStmt
-      | RETURN (exp)? SEMICOLON 			#ReturnStmt;
+      | WHILE L_PAREN cond R_PAREN stmt			    #WhileStmt
+      | BREAK SEMICOLON					            #BreakStmt
+      | CONTINUE SEMICOLON				            #ContinueStmt
+      | RETURN (exp)? SEMICOLON 			        #ReturnStmt;
 
 exp : L_PAREN exp R_PAREN  		#PARENS
-   | lVal 		   		#LvalExp
-   | number 				#NumberExp
+   | lVal 		   		        #LvalExp
+   | number 				    #NumberExp
    | IDENT L_PAREN funcRParams? R_PAREN #CallFuncExp
-   | unaryOp exp 			#UnaryOpExp
-   | exp (MUL | DIV | MOD) exp 		#MulExp
-   | exp (PLUS | MINUS) exp 		#PlusExp
+   | unaryOp exp 			            #UnaryOpExp
+   | exp (MUL | DIV | MOD) exp 		    #MulExp
+   | exp (PLUS | MINUS) exp 		    #PlusExp
    ;
 
 cond
