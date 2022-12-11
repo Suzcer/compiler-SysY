@@ -393,7 +393,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         SysYParser.ExpContext expCtx = ctx.exp();
         Type lType = (Type) visitLVal(lValCtx);
         Type rType = (Type) this.visit(expCtx);
-//        if (lType != null)                     //TODO 删除此行则出现空指针异常
+        if (lType != null)                     //TODO 删除此行则出现空指针异常
             if (!lType.equals(rType) && !rType.equals(new BasicType(SimpleType.ERROR)))
                 report(5, lValCtx.IDENT().getSymbol().getLine());
         return null;
