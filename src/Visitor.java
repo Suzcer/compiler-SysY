@@ -230,13 +230,31 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         Symbol symbol = currentScope.resolve(varName);
         if (symbol == null)
             report(2, ctx.IDENT().getSymbol().getLine());
-            //else 检查是否为变量的symbol而不是函数的symbol
-        else {
-            if (!(symbol instanceof FunctionSymbol))
+        else if(!(symbol instanceof FunctionSymbol)){ //检查是否为变量的symbol而不是函数的symbol
                 report(10, ctx.IDENT().getSymbol().getLine());
+        }else{          // 检查参数传递是否正确
+            FunctionType functionType = (FunctionType) symbol.getType();
+            ArrayList<Type> paramsType = functionType.getParamsType();
+
+            List<SysYParser.ParamContext> paramCtxs = ctx.funcRParams().param();
+            if(!paramCtxs.isEmpty()){
+                boolean isQualified=true;
+                if(paramsType.size()!=paramCtxs.size()) isQualified=false;
+                else{
+                    int minSize= Math.min(paramCtxs.size(), paramsType.size());
+                    for(int index=0;index<minSize;index++){
+                        Type type = (Type)visitParam(paramCtxs.get(index)); //TODO 会导致少遍历一些ctx
+                        if(!type.equals(paramsType.get(index)))
+                            isQualified=false;
+                    }
+                }
+                if(!isQualified)
+                    report(8,ctx.IDENT().getSymbol().getLine());
+            }
+            return (T)functionType.getRetType();
         }
 
-        return super.visitCallFuncExp(ctx);
+        return null;        //TODO , 可能需要修改，保证不会重复输出错误
     }
 
     @Override

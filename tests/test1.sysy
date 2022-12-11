@@ -1,4 +1,5 @@
 int a(){
+    return 1;
 }
 
 int main(){
@@ -6,4 +7,5 @@ int main(){
     int array[2] = {0,0};
     test1 = array;
     test1 = a + array;
+    test1 = a(1);
 }
