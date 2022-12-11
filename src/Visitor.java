@@ -1,18 +1,11 @@
 import TypeSys.*;
-import org.antlr.v4.runtime.Vocabulary;
 import symtable.*;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
-    public String[] ruleNames;
-
-    public Vocabulary vocabulary;
-
-    public HashMap<String, String> mp;
 
     private GlobalScope globalScope = null;
 
@@ -22,71 +15,16 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
     private Type currentRetType;
 
+    private boolean hasError = false;
+
     private void report(int errType, int lineNo) {
+        hasError = true;
         System.err.println("Error type " + errType + " at Line " + lineNo + ":");
     }
 
-    public void setRulesName(String[] ruleNames) {
-        this.ruleNames = ruleNames;
+    public boolean hasError() {
+        return hasError;
     }
-
-    public void setVocabulary(Vocabulary vocabulary) {
-        this.vocabulary = vocabulary;
-    }
-
-    public void setMp(HashMap<String, String> mp) {
-        this.mp = mp;
-    }
-
-
-    private static String captureName(String name) {
-        name = name.substring(0, 1).toUpperCase() + name.substring(1);
-        return name;
-    }
-
-    private String baseTrans(String text) {
-        if (text.charAt(0) == '0' && text.length() >= 2) {
-            int i;
-            if (text.charAt(1) == 'x' || text.charAt(1) == 'X') {
-                i = Integer.parseInt(text.substring(2), 16);
-            } else {
-                i = Integer.parseInt(text, 8);
-            }
-            return String.valueOf(i);
-        } else {
-            return text;
-        }
-    }
-
-    //实现语法树的打印
-//    @Override
-//    public T visitChildren(RuleNode node) {
-//        String ruleName = ruleNames[node.getRuleContext().getRuleIndex()];
-//        for (int i = 0; i + 1 < node.getRuleContext().depth(); i++) System.err.print("  ");
-//        System.err.println(captureName(ruleName));
-//        return super.visitChildren(node);
-//    }
-//
-//    //打印终结符及终结符的高亮
-//    @Override
-//    public T visitTerminal(TerminalNode node) {
-//
-//        String type = vocabulary.getSymbolicName(node.getSymbol().getType());
-//        if (mp.containsKey(type)) {
-//            RuleNode parent;
-//            if (node.getParent() instanceof RuleNode) {
-//                parent = (RuleNode) node.getParent();
-//                for (int i = 0; i < parent.getRuleContext().depth(); i++)
-//                    System.err.print("  ");
-//            }
-//
-//            System.err.print(baseTrans(node.getText()) + " ");
-//            System.err.print(type);
-//            System.err.println("[" + mp.get(type) + "]");
-//        }
-//
-//        return super.visitTerminal(node);
-//    }
 
     @Override
     public T visitProgram(SysYParser.ProgramContext ctx) {
@@ -129,7 +67,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
                     // int a[1][2];
                     int dimensions = varDefCtx.L_BRACKT().size();
                     BasicType mostInner = (BasicType) type;
-                    ArrayType ptr = new ArrayType(mostInner,1,1);   // lab3的count不予考虑
+                    ArrayType ptr = new ArrayType(mostInner, 1, 1);   // lab3的count不予考虑
                     int cnt = 2;
                     while (cnt <= dimensions) {
                         ptr = new ArrayType(ptr, 1, cnt);
@@ -203,16 +141,16 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
             Type ptr = arraySymbol.getType();
             if (ptr instanceof ArrayType) {
                 while (cnt-- > 0) {
-                    if(ptr instanceof ArrayType)
+                    if (ptr instanceof ArrayType)
                         ptr = ((ArrayType) ptr).getSubType();
                     else if (ptr instanceof BasicType) {    //此时没有subType，ptr不能是BasicType
-                        report(9,ctx.IDENT().getSymbol().getLine());
+                        report(9, ctx.IDENT().getSymbol().getLine());
                     }
                 }
                 return (T) ptr;
             }
         }
-        if(symbol!=null) return (T) symbol.getType();
+        if (symbol != null) return (T) symbol.getType();
         return null;
     }
 
@@ -228,31 +166,31 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         Symbol symbol = currentScope.resolve(varName);
         if (symbol == null)
             report(2, ctx.IDENT().getSymbol().getLine());
-        else if(!(symbol instanceof FunctionSymbol)){ //检查是否为变量的symbol而不是函数的symbol
-                report(10, ctx.IDENT().getSymbol().getLine());
-        }else{          // 检查参数传递是否正确
+        else if (!(symbol instanceof FunctionSymbol)) { //检查是否为变量的symbol而不是函数的symbol
+            report(10, ctx.IDENT().getSymbol().getLine());
+        } else {          // 检查参数传递是否正确
             FunctionType functionType = (FunctionType) symbol.getType();
             ArrayList<Type> paramsType = functionType.getParamsType();  //定义的时候
 
             SysYParser.FuncRParamsContext funcRParamsCtx = ctx.funcRParams();
-            if(funcRParamsCtx!=null){
-                List<SysYParser.ParamContext> paramCtxs =funcRParamsCtx.param();
-                if(!paramCtxs.isEmpty()){
-                    boolean isQualified=true;
-                    if(paramsType.size()!=paramCtxs.size()) isQualified=false;
-                    else{
-                        int minSize= Math.min(paramCtxs.size(), paramsType.size());
-                        for(int index=0;index<minSize;index++){
-                            Type type = (Type)visitParam(paramCtxs.get(index)); //TODO 会导致少遍历一些ctx
-                            if(type==null||!type.equals(paramsType.get(index)))
-                                isQualified=false;
+            if (funcRParamsCtx != null) {
+                List<SysYParser.ParamContext> paramCtxs = funcRParamsCtx.param();
+                if (!paramCtxs.isEmpty()) {
+                    boolean isQualified = true;
+                    if (paramsType.size() != paramCtxs.size()) isQualified = false;
+                    else {
+                        int minSize = Math.min(paramCtxs.size(), paramsType.size());
+                        for (int index = 0; index < minSize; index++) {
+                            Type type = (Type) visitParam(paramCtxs.get(index)); //TODO 会导致少遍历一些ctx
+                            if (type == null || !type.equals(paramsType.get(index)))
+                                isQualified = false;
                         }
                     }
-                    if(!isQualified)
-                        report(8,ctx.IDENT().getSymbol().getLine());
+                    if (!isQualified)
+                        report(8, ctx.IDENT().getSymbol().getLine());
                 }
             }
-            return (T)functionType.getRetType();
+            return (T) functionType.getRetType();
         }
 
         return null;        //TODO , 可能需要修改，保证不会重复输出错误
@@ -266,6 +204,20 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
     @Override
     public T visitUnaryOpExp(SysYParser.UnaryOpExpContext ctx) {
+        Type type = (Type)this.visit(ctx.exp());
+        int lineNum = 0;
+        if (ctx.unaryOp().PLUS() != null) lineNum=ctx.unaryOp().PLUS().getSymbol().getLine();
+        if (ctx.unaryOp().MINUS() != null) lineNum=ctx.unaryOp().MINUS().getSymbol().getLine();
+        if (ctx.unaryOp().NOT() != null) lineNum=ctx.unaryOp().NOT().getSymbol().getLine();
+        if(type instanceof BasicType){
+            BasicType basicType = (BasicType) type;
+            if(basicType.getSimpleType()!=SimpleType.INT){
+                report(6,lineNum);
+            }
+        }else{
+            report(6,lineNum);
+            return (T) new BasicType(SimpleType.ERROR);
+        }
         return super.visitUnaryOpExp(ctx);
     }
 
@@ -280,13 +232,13 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         if (lType instanceof BasicType && rType instanceof BasicType) {
             BasicType lt = (BasicType) lType;
             BasicType rt = (BasicType) rType;
-            if (rt.getSimpleType() != SimpleType.INT || lt.getSimpleType() != SimpleType.INT){
+            if (rt.getSimpleType() != SimpleType.INT || lt.getSimpleType() != SimpleType.INT) {
                 report(6, lineNum);
-                return (T)new BasicType(SimpleType.ERROR);
+                return (T) new BasicType(SimpleType.ERROR);
             }
-        }else{
-            report(6,lineNum);
-            return (T)new BasicType(SimpleType.ERROR);
+        } else {
+            report(6, lineNum);
+            return (T) new BasicType(SimpleType.ERROR);
         }
         return (T) lType;
     }
@@ -301,13 +253,13 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         if (lType instanceof BasicType && rType instanceof BasicType) {
             BasicType lt = (BasicType) lType;
             BasicType rt = (BasicType) rType;
-            if (rt.getSimpleType() != SimpleType.INT || lt.getSimpleType() != SimpleType.INT){
+            if (rt.getSimpleType() != SimpleType.INT || lt.getSimpleType() != SimpleType.INT) {
                 report(6, lineNum);
-                return (T)new BasicType(SimpleType.ERROR);
+                return (T) new BasicType(SimpleType.ERROR);
             }
-        }else{
-            report(6,lineNum);
-            return (T)new BasicType(SimpleType.ERROR);
+        } else {
+            report(6, lineNum);
+            return (T) new BasicType(SimpleType.ERROR);
         }
         return (T) lType;
     }
@@ -413,7 +365,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         SysYParser.LValContext lValCtx = ctx.lVal();
         String varName = lValCtx.IDENT().getText();
         Symbol symbol = currentScope.resolve(varName);
-        if (symbol instanceof FunctionSymbol){
+        if (symbol instanceof FunctionSymbol) {
             report(11, lValCtx.IDENT().getSymbol().getLine());
             return null;
         }
@@ -459,17 +411,20 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         return super.visitContinueStmt(ctx);
     }
 
+    /**
+     * 对于类型7的实现有bug，比如int a(){}，并没有写返回值，当然就不会触发7
+     */
     @Override
     public T visitReturnStmt(SysYParser.ReturnStmtContext ctx) {
-        if(ctx.exp()==null){
-            if(!(currentRetType instanceof BasicType))
-                report(7,ctx.RETURN().getSymbol().getLine());
-            else{
+        if (ctx.exp() == null) {
+            if (!(currentRetType instanceof BasicType))
+                report(7, ctx.RETURN().getSymbol().getLine());
+            else {
                 BasicType basicType = (BasicType) currentRetType;
-                if(basicType.getSimpleType()!=SimpleType.VOID)
-                    report(7,ctx.RETURN().getSymbol().getLine());
+                if (basicType.getSimpleType() != SimpleType.VOID)
+                    report(7, ctx.RETURN().getSymbol().getLine());
             }
-        }else{
+        } else {
             Type type = (Type) this.visit(ctx.exp());
             if (type != null)                                  //TODO
                 if (!type.equals(currentRetType))
@@ -479,3 +434,17 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         return null;
     }
 }
+
+/**
+ * Interesting Cases:
+ * 1.   void a(){}
+ *          int main(){
+ *          int c[2][3];
+ *          int b = a()*5*c[2];
+ *      }
+ *
+ * 2.   void a(){}
+ *          int main(){
+ *          int b=-a;
+ *      }
+ */
