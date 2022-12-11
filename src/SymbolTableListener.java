@@ -45,7 +45,7 @@ public class SymbolTableListener extends SysYParserBaseListener {
 
         //2. 报告函数重定义错误
         String funName = ctx.IDENT().getText();
-        Symbol tmp = currentScope.getSymbols().get(funName);
+        Symbol tmp = currentScope.resolve(funName);
         if (tmp != null) report(4, ctx.IDENT().getSymbol().getLine());
 
         //3. 构建 FunctionSymbol，设置 funcType
@@ -95,7 +95,7 @@ public class SymbolTableListener extends SysYParserBaseListener {
         List<SysYParser.VarDefContext> varDefContexts = ctx.varDef();
         for (SysYParser.VarDefContext var_ctx : varDefContexts) {
             String varName = var_ctx.IDENT().getText();
-            Symbol tmp = currentScope.getSymbols().get(varName);
+            Symbol tmp = currentScope.resolve(varName);
             if (tmp != null) report(3, var_ctx.IDENT().getSymbol().getLine());
             else {
                 VariableSymbol symbol = new VariableSymbol(varName, type);
@@ -105,13 +105,21 @@ public class SymbolTableListener extends SysYParserBaseListener {
     }
 
     @Override
+    public void enterLVal(SysYParser.LValContext ctx) {
+        String varName = ctx.IDENT().getText();
+        Symbol tmp = currentScope.resolve(varName);
+        if(tmp instanceof FunctionSymbol)
+            report(11,ctx.IDENT().getSymbol().getLine());
+    }
+
+    @Override
     public void enterConstDecl(SysYParser.ConstDeclContext ctx) {
         String typeName = ctx.bType().getText();
         Type type = (Type) globalScope.resolve(typeName);
         List<SysYParser.ConstDefContext> constDefContexts = ctx.constDef();
         for (SysYParser.ConstDefContext const_ctx : constDefContexts) {
             String varName = const_ctx.IDENT().getText();
-            Symbol tmp = currentScope.getSymbols().get(varName);
+            Symbol tmp = currentScope.resolve(varName);
             if (tmp != null) report(3, const_ctx.IDENT().getSymbol().getLine());
             else {
                 VariableSymbol symbol = new VariableSymbol(varName, type);
