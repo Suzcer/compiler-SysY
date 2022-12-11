@@ -130,7 +130,7 @@ public class SymbolTableListener extends SysYParserBaseListener {
             report(1, ctx.IDENT().getSymbol().getLine());
 //        else if(symbol instanceof FunctionSymbol)         // 处理应该在Assign中处理
 //            report(11,ctx.IDENT().getSymbol().getLine());
-        else if(symbol instanceof VariableSymbol && !expCtx.isEmpty())
+        else if((symbol instanceof VariableSymbol||symbol instanceof FunctionSymbol) && !expCtx.isEmpty())
             report(9,ctx.IDENT().getSymbol().getLine());
     }
 
