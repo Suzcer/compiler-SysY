@@ -128,10 +128,19 @@ public class SymbolTableListener extends SysYParserBaseListener {
 
         if (symbol == null)
             report(1, ctx.IDENT().getSymbol().getLine());
-        else if(symbol instanceof FunctionSymbol)
-            report(11,ctx.IDENT().getSymbol().getLine());
+//        else if(symbol instanceof FunctionSymbol)         // 处理应该在Assign中处理
+//            report(11,ctx.IDENT().getSymbol().getLine());
         else if(symbol instanceof VariableSymbol && !expCtx.isEmpty())
             report(9,ctx.IDENT().getSymbol().getLine());
+    }
+
+    @Override
+    public void enterAssignStmt(SysYParser.AssignStmtContext ctx) {
+        SysYParser.LValContext lVal = ctx.lVal();
+        String varName = lVal.IDENT().getText();
+        Symbol symbol = currentScope.resolve(varName);
+        if(symbol instanceof FunctionSymbol)
+            report(11,lVal.IDENT().getSymbol().getLine());
     }
 
 
