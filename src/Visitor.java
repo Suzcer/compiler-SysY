@@ -208,7 +208,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
                     else if (ptr instanceof BasicType) {
                         ptr = (BasicType) ptr;      //其实如果不是 ArrayType 则无需任何操作
                     }else{
-                        // 可能需要报错
+                        report(9,ctx.IDENT().getSymbol().getLine());
                     }
                 }
                 return (T) ptr;

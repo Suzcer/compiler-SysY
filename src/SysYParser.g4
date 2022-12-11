@@ -45,9 +45,9 @@ stmt: lVal ASSIGN exp SEMICOLON 			#AssignStmt
       | CONTINUE SEMICOLON				            #ContinueStmt
       | RETURN (exp)? SEMICOLON 			        #ReturnStmt;
 
-exp : L_PAREN exp R_PAREN  		#PARENS
-   | lVal 		   		        #LvalExp
-   | number 				    #NumberExp
+exp : L_PAREN exp R_PAREN  		        #PARENS
+   | lVal 		   		                #LvalExp
+   | number 				            #NumberExp
    | IDENT L_PAREN funcRParams? R_PAREN #CallFuncExp
    | unaryOp exp 			            #UnaryOpExp
    | exp (MUL | DIV | MOD) exp 		    #MulExp
