@@ -1,7 +1,4 @@
-int test(int i){
-    return 1;
-}
-
 int test(){
-    return b();
+    int a;
+    int a;
 }

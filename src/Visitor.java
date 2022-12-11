@@ -100,21 +100,12 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
     @Override
     public T visitCompUnit(SysYParser.CompUnitContext ctx) {
-        List<SysYParser.DeclContext> declCtx = ctx.decl();
-        List<SysYParser.FuncDefContext> funcDefCtx = ctx.funcDef();
-        for (SysYParser.DeclContext each : declCtx) visitDecl(each);
-        for (SysYParser.FuncDefContext each : funcDefCtx) visitFuncDef(each);
-        return null;
+        return super.visitCompUnit(ctx);
     }
 
     @Override
     public T visitDecl(SysYParser.DeclContext ctx) {
-        SysYParser.VarDeclContext varDeclCtx = ctx.varDecl();
-        SysYParser.ConstDeclContext constDeclCtx = ctx.constDecl();
-        if (varDeclCtx != null) visitVarDecl(varDeclCtx);
-        if (constDeclCtx != null) visitConstDecl(constDeclCtx);
-
-        return null;
+        return super.visitDecl(ctx);
     }
 
     @Override
@@ -126,10 +117,10 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         String typeName = ctx.bType().getText();
         Type type = (Type) globalScope.resolve(typeName);
         List<SysYParser.VarDefContext> varDefContexts = ctx.varDef();
-        for (SysYParser.VarDefContext var_ctx : varDefContexts) {
-            String varName = var_ctx.IDENT().getText();
+        for (SysYParser.VarDefContext varDefCtx : varDefContexts) {
+            String varName = varDefCtx.IDENT().getText();
             Symbol tmp = currentScope.getSymbols().get(varName);        // 如果和当前作用域的重名了，才需要进行错误报告
-            if (tmp != null) report(3, var_ctx.IDENT().getSymbol().getLine());
+            if (tmp != null) report(3, varDefCtx.IDENT().getSymbol().getLine());
             else {
                 VariableSymbol symbol = new VariableSymbol(varName, type);
                 currentScope.define(symbol);
@@ -157,8 +148,9 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
     @Override
     public T visitVarDef(SysYParser.VarDefContext ctx) {
-        List<SysYParser.ConstExpContext> constExpCtxs = ctx.constExp();
-        for (SysYParser.ConstExpContext each : constExpCtxs) visitConstExp(each);
+        super.visitVarDef(ctx);
+//        List<SysYParser.ConstExpContext> constExpCtxs = ctx.constExp();
+//        for (SysYParser.ConstExpContext each : constExpCtxs) visitConstExp(each);
         return null;
     }
 
@@ -262,9 +254,10 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         currentScope.define(fun);
         currentScope = fun;
 
-        visitFuncType(funcTypeCtx);
-        visitFuncFParams(funcFParamsCtx);
-        visitBlock(blockCtx);
+        //4. 使用父类的遍历
+        super.visitFuncDef(ctx);
+
+        //5. 退出后修改作用域
         currentScope = currentScope.getEnclosingScope();
         return null;
     }
@@ -300,25 +293,26 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
     @Override
     public T visitBlock(SysYParser.BlockContext ctx) {
+        //1. enterBlock
         LocalScope localScope = new LocalScope(currentScope);
         String localScopeName = localScope.getName() + localScopeCounter;
         localScope.setName(localScopeName);
         localScopeCounter++;
         currentScope = localScope;
 
-        List<SysYParser.BlockItemContext> blockItemCtxs = ctx.blockItem();
-        for(SysYParser.BlockItemContext each:blockItemCtxs) visitBlockItem(each);
+        //2. super
+        super.visitBlock(ctx);
+//        List<SysYParser.BlockItemContext> blockItemCtxs = ctx.blockItem();
+//        for(SysYParser.BlockItemContext each:blockItemCtxs) visitBlockItem(each);
 
+        //3. exitBlock
         currentScope = currentScope.getEnclosingScope();
         return null;
     }
 
     @Override
     public T visitBlockItem(SysYParser.BlockItemContext ctx) {
-        SysYParser.StmtContext stmt = ctx.stmt();
-        if(stmt!=null)
-            this.visit(stmt);
-        return null;
+        return super.visitBlockItem(ctx);
     }
 
     @Override
