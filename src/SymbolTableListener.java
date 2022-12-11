@@ -32,14 +32,16 @@ public class SymbolTableListener extends SysYParserBaseListener {
         String typeName = ctx.funcType().getText();
         Type retType = (Type) globalScope.resolve(typeName);//解析类型名，要去全局的作用域解析
         SysYParser.FuncFParamsContext funcFParamsCtx = ctx.funcFParams();
-        List<SysYParser.FuncFParamContext> funcFParamCtx = funcFParamsCtx.funcFParam();
-        ArrayList<Type> paramsType=new ArrayList<>();
-        for(SysYParser.FuncFParamContext paramCtx:funcFParamCtx){
-            String paramTypeName = paramCtx.bType().getText();
-            Type paramType = (Type) globalScope.resolve(paramTypeName);     // 假设参数只有基本类型
-            paramsType.add(paramType);
+        ArrayList<Type> paramsType = new ArrayList<>();
+        if (funcFParamsCtx != null) {       // 如果有参数
+            List<SysYParser.FuncFParamContext> funcFParamCtx = funcFParamsCtx.funcFParam();
+            for (SysYParser.FuncFParamContext paramCtx : funcFParamCtx) {
+                String paramTypeName = paramCtx.bType().getText();
+                Type paramType = (Type) globalScope.resolve(paramTypeName);     // 假设参数只有基本类型
+                paramsType.add(paramType);
+            }
         }
-        FunctionType ft=new FunctionType(retType,paramsType);
+        FunctionType ft = new FunctionType(retType, paramsType);
 
         //2. 报告函数重定义错误
         String funName = ctx.IDENT().getText();
@@ -132,10 +134,10 @@ public class SymbolTableListener extends SysYParserBaseListener {
         Symbol symbol = currentScope.resolve(varName);
         if (symbol == null)
             report(2, ctx.IDENT().getSymbol().getLine());
-        //else 检查是否为变量的symbol而不是函数的symbol
-        else{
-            if(!(symbol instanceof FunctionSymbol))
-                report(10,ctx.IDENT().getSymbol().getLine());
+            //else 检查是否为变量的symbol而不是函数的symbol
+        else {
+            if (!(symbol instanceof FunctionSymbol))
+                report(10, ctx.IDENT().getSymbol().getLine());
         }
     }
 

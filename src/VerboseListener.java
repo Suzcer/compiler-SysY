@@ -1,5 +1,4 @@
 import org.antlr.v4.runtime.BaseErrorListener;
-import org.antlr.v4.runtime.CommonToken;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
 
@@ -19,10 +18,9 @@ public class VerboseListener extends BaseErrorListener {
 //        System.err.println("rule stack: "+stack);
 //        System.err.println("line "+line+":"+charPositionInLine+" at "+
 //                offendingSymbol+": "+msg);
-        CommonToken token = (CommonToken) offendingSymbol;
-        entered=true;
-//        System.err.println("Error type A at Line "+line+": Mysterious character \""+token.getText()+"\".");
-        System.err.println("Error type A at Line "+line+": Mysterious character .");
+//        CommonToken token = (CommonToken) offendingSymbol;
+//        entered=true;
+//        System.err.println("Error type A at Line "+line+": Mysterious character .");
     }
 
     public boolean getEntered(){

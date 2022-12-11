@@ -1,7 +1,6 @@
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.Vocabulary;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
@@ -57,26 +56,22 @@ public class Main {
         mp.put("INTEGR_CONST","green");
 
         ParseTree tree = sysYParser.program();
-        String[] ruleNames = sysYParser.getRuleNames();
-        Vocabulary vocabulary = sysYParser.getVocabulary();
-        Visitor visitor = new Visitor();
-        visitor.setRulesName(ruleNames);
-        visitor.setVocabulary(vocabulary);
-        visitor.setMp(mp);
+//        String[] ruleNames = sysYParser.getRuleNames();
+//        Vocabulary vocabulary = sysYParser.getVocabulary();
+//        Visitor visitor = new Visitor();
+//        visitor.setRulesName(ruleNames);
+//        visitor.setVocabulary(vocabulary);
+//        visitor.setMp(mp);
 
 //        int lineNo = Integer.parseInt(args[1]);
 //        int column = Integer.parseInt(args[2]);
 //        String name = args[3];
         ParseTreeWalker walker = new ParseTreeWalker();
         SymbolTableListener symtableListener = new SymbolTableListener();
-
-        if(!listener.getEntered()){
-
+        walker.walk(symtableListener,tree);
+//        if(!listener.getEntered()){
 //            visitor.visit(tree);
-            walker.walk(symtableListener,tree);
+//        }
 
-        }
     }
-
-
 }
