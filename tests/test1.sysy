@@ -1,8 +1,9 @@
-int main(){
+void main(){
 
 }
 
 int main(){
     int ok=1;
     int ok;
+    return 1;
 }

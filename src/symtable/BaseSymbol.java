@@ -23,4 +23,9 @@ public class BaseSymbol implements Symbol {
     public String toString() {
         return "";
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        return super.equals(obj);
+    }
 }

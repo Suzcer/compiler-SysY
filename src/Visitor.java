@@ -110,8 +110,6 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
     @Override
     public T visitVarDecl(SysYParser.VarDeclContext ctx) {
-//        List<SysYParser.VarDefContext> varDefCtxs = ctx.varDef();
-//        for (SysYParser.VarDefContext each : varDefCtxs) visitVarDef(each);
         super.visitVarDecl(ctx);
 
         String typeName = ctx.bType().getText();
@@ -149,8 +147,6 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
     @Override
     public T visitVarDef(SysYParser.VarDefContext ctx) {
         super.visitVarDef(ctx);
-//        List<SysYParser.ConstExpContext> constExpCtxs = ctx.constExp();
-//        for (SysYParser.ConstExpContext each : constExpCtxs) visitConstExp(each);
         return null;
     }
 

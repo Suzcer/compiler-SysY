@@ -1,6 +1,5 @@
 package symtable;
 
-import TypeSys.BasicType;
 import TypeSys.Type;
 
 /**
@@ -9,11 +8,9 @@ import TypeSys.Type;
  */
 public class BasicTypeSymbol extends BaseSymbol implements Type {
 
-    private BasicType basicType;
 
-    public BasicTypeSymbol(String name,BasicType basicType) {
-        super(name, null);
-        this.basicType=basicType;
+    public BasicTypeSymbol(String name, Type basicType) {
+        super(name, basicType);
     }
 
     @Override
@@ -23,18 +20,11 @@ public class BasicTypeSymbol extends BaseSymbol implements Type {
 
     @Override
     public boolean equals(Object obj) {
-        if(obj instanceof BasicTypeSymbol){
-            BasicTypeSymbol basicTypeSymbol = (BasicTypeSymbol) obj;
-            return this.basicType.getSimpleType().equals(basicTypeSymbol.basicType.getSimpleType());
+        if (obj instanceof BasicTypeSymbol) {
+            BasicTypeSymbol sym = (BasicTypeSymbol) obj;
+            return sym.getType().equals(this.getType());
         }
         return false;
     }
 
-    public Type getBasicType() {
-        return basicType;
-    }
-
-    public void setBasicType(BasicType basicType) {
-        this.basicType = basicType;
-    }
 }
