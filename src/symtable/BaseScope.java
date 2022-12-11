@@ -1,6 +1,8 @@
 package symtable;
 
 
+import TypeSys.Type;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -52,6 +54,16 @@ public class BaseScope implements Scope {
         }
 
         return null;
+    }
+
+    @Override
+    public Type resolveType(String name) {
+        Symbol symbol = resolve(name);
+        if(symbol instanceof BaseSymbol){
+            return ((BaseSymbol) symbol).getType();
+        }else{
+            return (Type) symbol;
+        }
     }
 
     @Override

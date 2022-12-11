@@ -1,6 +1,9 @@
-void a(){
-    return 3;
+int a(){
 }
+
 int main(){
-    int b=a();
+    int test1;
+    int array[2] = {0,0};
+    test1 = array;
+    test1 = a + array;
 }

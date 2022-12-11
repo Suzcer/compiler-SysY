@@ -1,5 +1,7 @@
 package symtable;
 
+import TypeSys.Type;
+
 import java.util.Map;
 
 public interface Scope {
@@ -17,4 +19,7 @@ public interface Scope {
 
     /** 比如a=b；这条语句，要找b具体指的是哪个b，即解析 **/
     public Symbol resolve(String name);
+
+    /** 解决冲突问题  **/
+    public Type resolveType(String name);
 }
