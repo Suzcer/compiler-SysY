@@ -23,7 +23,8 @@ public class BasicTypeSymbol extends BaseSymbol implements Type {
 
     @Override
     public boolean equals(Object obj) {
-        if(obj instanceof BasicTypeSymbol basicTypeSymbol){
+        if(obj instanceof BasicTypeSymbol){
+            BasicTypeSymbol basicTypeSymbol = (BasicTypeSymbol) obj;
             return this.basicType.getSimpleType().equals(basicTypeSymbol.basicType.getSimpleType());
         }
         return false;
