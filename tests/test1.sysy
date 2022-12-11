@@ -1,7 +1,7 @@
-int a(){
-
-}
-int main(){
-    int b=a[3];
+int test(int i){
+    return 1;
 }
 
+int test(){
+    return b();
+}

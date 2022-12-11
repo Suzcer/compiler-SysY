@@ -1,16 +1,29 @@
+import TypeSys.FunctionType;
+import TypeSys.Type;
 import org.antlr.v4.runtime.Vocabulary;
-import org.antlr.v4.runtime.tree.RuleNode;
-import org.antlr.v4.runtime.tree.TerminalNode;
+import symtable.*;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
-public class Visitor extends SysYParserBaseVisitor<Void> {
+public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
     public String[] ruleNames;
 
     public Vocabulary vocabulary;
 
     public HashMap<String, String> mp;
+
+    private GlobalScope globalScope = null;
+
+    private Scope currentScope = null;
+
+    private int localScopeCounter = 0;
+
+    private void report(int errType, int lineNo) {
+        System.err.println("Error type " + errType + " at Line " + lineNo + ":");
+    }
 
     public void setRulesName(String[] ruleNames) {
         this.ruleNames = ruleNames;
@@ -25,21 +38,12 @@ public class Visitor extends SysYParserBaseVisitor<Void> {
     }
 
 
-    public static String captureName(String name) {
+    private static String captureName(String name) {
         name = name.substring(0, 1).toUpperCase() + name.substring(1);
         return name;
     }
 
-    //实现语法树的打印
-    @Override
-    public Void visitChildren(RuleNode node) {
-        String ruleName = ruleNames[node.getRuleContext().getRuleIndex()];
-        for (int i = 0; i + 1 < node.getRuleContext().depth(); i++) System.err.print("  ");
-        System.err.println(captureName(ruleName));
-        return super.visitChildren(node);
-    }
-
-    public String baseTrans(String text) {
+    private String baseTrans(String text) {
         if (text.charAt(0) == '0' && text.length() >= 2) {
             int i;
             if (text.charAt(1) == 'x' || text.charAt(1) == 'X') {
@@ -53,24 +57,317 @@ public class Visitor extends SysYParserBaseVisitor<Void> {
         }
     }
 
-    //打印终结符及终结符的高亮
+    //实现语法树的打印
+//    @Override
+//    public T visitChildren(RuleNode node) {
+//        String ruleName = ruleNames[node.getRuleContext().getRuleIndex()];
+//        for (int i = 0; i + 1 < node.getRuleContext().depth(); i++) System.err.print("  ");
+//        System.err.println(captureName(ruleName));
+//        return super.visitChildren(node);
+//    }
+//
+//    //打印终结符及终结符的高亮
+//    @Override
+//    public T visitTerminal(TerminalNode node) {
+//
+//        String type = vocabulary.getSymbolicName(node.getSymbol().getType());
+//        if (mp.containsKey(type)) {
+//            RuleNode parent;
+//            if (node.getParent() instanceof RuleNode) {
+//                parent = (RuleNode) node.getParent();
+//                for (int i = 0; i < parent.getRuleContext().depth(); i++)
+//                    System.err.print("  ");
+//            }
+//
+//            System.err.print(baseTrans(node.getText()) + " ");
+//            System.err.print(type);
+//            System.err.println("[" + mp.get(type) + "]");
+//        }
+//
+//        return super.visitTerminal(node);
+//    }
+
     @Override
-    public Void visitTerminal(TerminalNode node) {
+    public T visitProgram(SysYParser.ProgramContext ctx) {
+        globalScope = new GlobalScope(null);
+        currentScope = globalScope;
+        SysYParser.CompUnitContext compUnitCtx = ctx.compUnit();
+        if (compUnitCtx != null)
+            visitCompUnit(compUnitCtx);
+        currentScope = currentScope.getEnclosingScope();
+        return null;
+    }
 
-        String type = vocabulary.getSymbolicName(node.getSymbol().getType());
-        if (mp.containsKey(type)) {
-            RuleNode parent;
-            if (node.getParent() instanceof RuleNode) {
-                parent = (RuleNode) node.getParent();
-                for (int i = 0; i < parent.getRuleContext().depth(); i++)
-                    System.err.print("  ");
+    @Override
+    public T visitCompUnit(SysYParser.CompUnitContext ctx) {
+        List<SysYParser.DeclContext> declCtx = ctx.decl();
+        List<SysYParser.FuncDefContext> funcDefCtx = ctx.funcDef();
+        for (SysYParser.DeclContext each : declCtx) visitDecl(each);
+        for (SysYParser.FuncDefContext each : funcDefCtx) visitFuncDef(each);
+        return null;
+    }
+
+    @Override
+    public T visitDecl(SysYParser.DeclContext ctx) {
+        SysYParser.VarDeclContext varDeclCtx = ctx.varDecl();
+        SysYParser.ConstDeclContext constDeclCtx = ctx.constDecl();
+        if (varDeclCtx != null) visitVarDecl(varDeclCtx);
+        if (constDeclCtx != null) visitConstDecl(constDeclCtx);
+
+        return null;
+    }
+
+    @Override
+    public T visitVarDecl(SysYParser.VarDeclContext ctx) {
+        List<SysYParser.VarDefContext> varDefCtxs = ctx.varDef();
+        for (SysYParser.VarDefContext each : varDefCtxs) visitVarDef(each);
+
+        String typeName = ctx.bType().getText();
+        Type type = (Type) globalScope.resolve(typeName);
+        List<SysYParser.VarDefContext> varDefContexts = ctx.varDef();
+        for (SysYParser.VarDefContext var_ctx : varDefContexts) {
+            String varName = var_ctx.IDENT().getText();
+            Symbol tmp = currentScope.getSymbols().get(varName);        // 如果和当前作用域的重名了，才需要进行错误报告
+            if (tmp != null) report(3, var_ctx.IDENT().getSymbol().getLine());
+            else {
+                VariableSymbol symbol = new VariableSymbol(varName, type);
+                currentScope.define(symbol);
             }
+        }
+        return null;
+    }
 
-            System.err.print(baseTrans(node.getText()) + " ");
-            System.err.print(type);
-            System.err.println("[" + mp.get(type) + "]");
+    @Override
+    public T visitConstDecl(SysYParser.ConstDeclContext ctx) {
+        String typeName = ctx.bType().getText();
+        Type type = (Type) globalScope.resolve(typeName);
+        List<SysYParser.ConstDefContext> constDefContexts = ctx.constDef();
+        for (SysYParser.ConstDefContext const_ctx : constDefContexts) {
+            String varName = const_ctx.IDENT().getText();
+            Symbol tmp = currentScope.getSymbols().get(varName);
+            if (tmp != null) report(3, const_ctx.IDENT().getSymbol().getLine());
+            else {
+                VariableSymbol symbol = new VariableSymbol(varName, type);
+                currentScope.define(symbol);
+            }
+        }
+        return super.visitConstDecl(ctx);
+    }
+
+    @Override
+    public T visitVarDef(SysYParser.VarDefContext ctx) {
+        List<SysYParser.ConstExpContext> constExpCtxs = ctx.constExp();
+        for (SysYParser.ConstExpContext each : constExpCtxs) visitConstExp(each);
+        return null;
+    }
+
+    @Override
+    public T visitConstExp(SysYParser.ConstExpContext ctx) {
+        SysYParser.ExpContext expCtx = ctx.exp();
+        if (expCtx != null)
+            this.visit(expCtx);
+        return null;
+    }
+
+    @Override
+    public T visitPARENS(SysYParser.PARENSContext ctx) {
+        return super.visitPARENS(ctx);
+    }
+
+    @Override
+    public T visitLvalExp(SysYParser.LvalExpContext ctx) {
+        return super.visitLvalExp(ctx);
+    }
+
+    @Override
+    public T visitLVal(SysYParser.LValContext ctx) {
+        String varName = ctx.IDENT().getText();
+        Symbol symbol = currentScope.resolve(varName);
+        List<SysYParser.ExpContext> expCtx = ctx.exp();
+
+        if (symbol == null)
+            report(1, ctx.IDENT().getSymbol().getLine());
+//        else if(symbol instanceof FunctionSymbol)         // 处理应该在Assign中处理
+//            report(11,ctx.IDENT().getSymbol().getLine());
+        else if((symbol instanceof VariableSymbol||symbol instanceof FunctionSymbol) && !expCtx.isEmpty())
+            report(9,ctx.IDENT().getSymbol().getLine());
+
+        return super.visitLVal(ctx);
+    }
+
+    @Override
+    public T visitNumberExp(SysYParser.NumberExpContext ctx) {
+        return super.visitNumberExp(ctx);
+    }
+
+    @Override
+    public T visitCallFuncExp(SysYParser.CallFuncExpContext ctx) {
+        String varName = ctx.IDENT().getText();
+        Symbol symbol = currentScope.resolve(varName);
+        if (symbol == null)
+            report(2, ctx.IDENT().getSymbol().getLine());
+            //else 检查是否为变量的symbol而不是函数的symbol
+        else {
+            if (!(symbol instanceof FunctionSymbol))
+                report(10, ctx.IDENT().getSymbol().getLine());
         }
 
-        return super.visitTerminal(node);
+        return super.visitCallFuncExp(ctx);
+    }
+
+    @Override
+    public T visitUnaryOpExp(SysYParser.UnaryOpExpContext ctx) {
+        return super.visitUnaryOpExp(ctx);
+    }
+
+    @Override
+    public T visitMulExp(SysYParser.MulExpContext ctx) {
+        return super.visitMulExp(ctx);
+    }
+
+    @Override
+    public T visitPlusExp(SysYParser.PlusExpContext ctx) {
+        return super.visitPlusExp(ctx);
+    }
+
+    @Override
+    public T visitFuncDef(SysYParser.FuncDefContext ctx) {
+        //1. 构建functionType, 获取 retType 和 paramsType
+        String typeName = ctx.funcType().getText();
+        Type retType = (Type) globalScope.resolve(typeName);//解析类型名，要去全局的作用域解析
+        SysYParser.FuncFParamsContext funcFParamsCtx = ctx.funcFParams();
+        SysYParser.FuncTypeContext funcTypeCtx = ctx.funcType();
+        SysYParser.BlockContext blockCtx = ctx.block();
+
+        ArrayList<Type> paramsType = new ArrayList<>();
+        if (funcFParamsCtx != null) {       // 如果有参数
+            List<SysYParser.FuncFParamContext> funcFParamCtx = funcFParamsCtx.funcFParam();
+            for (SysYParser.FuncFParamContext paramCtx : funcFParamCtx) {
+                String paramTypeName = paramCtx.bType().getText();
+                Type paramType = (Type) globalScope.resolve(paramTypeName);     // 假设参数只有基本类型
+                paramsType.add(paramType);
+            }
+        }
+        FunctionType ft = new FunctionType(retType, paramsType);
+
+        //2. 报告函数重定义错误
+        String funName = ctx.IDENT().getText();
+        Symbol tmp = currentScope.resolve(funName);
+        if (tmp != null) report(4, ctx.IDENT().getSymbol().getLine());
+
+        //3. 构建 FunctionSymbol，设置 funcType
+        FunctionSymbol fun = new FunctionSymbol(funName, currentScope);
+        fun.setFuncType(ft);
+        currentScope.define(fun);
+        currentScope = fun;
+
+        visitFuncType(funcTypeCtx);
+        visitFuncFParams(funcFParamsCtx);
+        visitBlock(blockCtx);
+        currentScope = currentScope.getEnclosingScope();
+        return null;
+    }
+
+    @Override
+    public T visitFuncType(SysYParser.FuncTypeContext ctx) {
+        return null;
+    }
+
+    @Override
+    public T visitFuncFParams(SysYParser.FuncFParamsContext ctx) {
+        if(ctx!=null){
+            List<SysYParser.FuncFParamContext> funcFParamContexts = ctx.funcFParam();
+            for(SysYParser.FuncFParamContext each:funcFParamContexts) visitFuncFParam(each);
+        }
+        return null;
+    }
+
+    @Override
+    public T visitFuncFParam(SysYParser.FuncFParamContext ctx) {
+        List<SysYParser.ExpContext> expCtxs = ctx.exp();
+        for(SysYParser.ExpContext each:expCtxs) this.visit(each);
+
+        String typeName = ctx.bType().getText();
+        Type type = (Type) globalScope.resolve(typeName);
+
+        String varName = ctx.IDENT().getText();
+        VariableSymbol symbol = new VariableSymbol(varName, type);
+        currentScope.define(symbol);
+
+        return null;
+    }
+
+    @Override
+    public T visitBlock(SysYParser.BlockContext ctx) {
+        LocalScope localScope = new LocalScope(currentScope);
+        String localScopeName = localScope.getName() + localScopeCounter;
+        localScope.setName(localScopeName);
+        localScopeCounter++;
+        currentScope = localScope;
+
+        List<SysYParser.BlockItemContext> blockItemCtxs = ctx.blockItem();
+        for(SysYParser.BlockItemContext each:blockItemCtxs) visitBlockItem(each);
+
+        currentScope = currentScope.getEnclosingScope();
+        return null;
+    }
+
+    @Override
+    public T visitBlockItem(SysYParser.BlockItemContext ctx) {
+        SysYParser.StmtContext stmt = ctx.stmt();
+        if(stmt!=null)
+            this.visit(stmt);
+        return null;
+    }
+
+    @Override
+    public T visitAssignStmt(SysYParser.AssignStmtContext ctx) {
+        SysYParser.LValContext lValCtx = ctx.lVal();
+        String varName = lValCtx.IDENT().getText();
+        Symbol symbol = currentScope.resolve(varName);
+        if(symbol instanceof FunctionSymbol)
+            report(11,lValCtx.IDENT().getSymbol().getLine());
+
+        SysYParser.ExpContext expCtx = ctx.exp();
+        visitLVal(lValCtx);
+        this.visit(expCtx);
+        return null;
+    }
+
+    @Override
+    public T visitExpStmt(SysYParser.ExpStmtContext ctx) {
+        SysYParser.ExpContext expCtx = ctx.exp();
+        this.visit(expCtx);
+        return null;
+    }
+
+    @Override
+    public T visitBlockStmt(SysYParser.BlockStmtContext ctx) {
+        return super.visitBlockStmt(ctx);
+    }
+
+    @Override
+    public T visitIfStmt(SysYParser.IfStmtContext ctx) {
+        return super.visitIfStmt(ctx);
+    }
+
+    @Override
+    public T visitWhileStmt(SysYParser.WhileStmtContext ctx) {
+        return super.visitWhileStmt(ctx);
+    }
+
+    @Override
+    public T visitBreakStmt(SysYParser.BreakStmtContext ctx) {
+        return super.visitBreakStmt(ctx);
+    }
+
+    @Override
+    public T visitContinueStmt(SysYParser.ContinueStmtContext ctx) {
+        return super.visitContinueStmt(ctx);
+    }
+
+    @Override
+    public T visitReturnStmt(SysYParser.ReturnStmtContext ctx) {
+        return super.visitReturnStmt(ctx);
     }
 }
