@@ -126,10 +126,10 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
                     VariableSymbol symbol = new VariableSymbol(varName, type);
                     currentScope.define(symbol);
                 } else {
-                    // int a[1][9];
+                    // int a[1][2];
                     int dimensions = varDefCtx.L_BRACKT().size();
                     BasicType mostInner = (BasicType) type;
-                    ArrayType ptr = new ArrayType(mostInner,1,1);// lab3的count不予考虑
+                    ArrayType ptr = new ArrayType(mostInner,1,1);   // lab3的count不予考虑
                     int cnt = 2;
                     while (cnt <= dimensions) {
                         ptr = new ArrayType(ptr, 1, cnt);
@@ -205,9 +205,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
                 while (cnt-- > 0) {
                     if(ptr instanceof ArrayType)
                         ptr = ((ArrayType) ptr).getSubType();
-                    else if (ptr instanceof BasicType) {
-                        ptr = (BasicType) ptr;      //其实如果不是 ArrayType 则无需任何操作
-                    }else{
+                    else if (ptr instanceof BasicType) {    //此时没有subType，ptr不能是BasicType
                         report(9,ctx.IDENT().getSymbol().getLine());
                     }
                 }
