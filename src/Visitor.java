@@ -234,22 +234,25 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
                 report(10, ctx.IDENT().getSymbol().getLine());
         }else{          // 检查参数传递是否正确
             FunctionType functionType = (FunctionType) symbol.getType();
-            ArrayList<Type> paramsType = functionType.getParamsType();
+            ArrayList<Type> paramsType = functionType.getParamsType();  //定义的时候
 
-            List<SysYParser.ParamContext> paramCtxs = ctx.funcRParams().param();
-            if(!paramCtxs.isEmpty()){
-                boolean isQualified=true;
-                if(paramsType.size()!=paramCtxs.size()) isQualified=false;
-                else{
-                    int minSize= Math.min(paramCtxs.size(), paramsType.size());
-                    for(int index=0;index<minSize;index++){
-                        Type type = (Type)visitParam(paramCtxs.get(index)); //TODO 会导致少遍历一些ctx
-                        if(!type.equals(paramsType.get(index)))
-                            isQualified=false;
+            SysYParser.FuncRParamsContext funcRParamsCtx = ctx.funcRParams();
+            if(funcRParamsCtx!=null){
+                List<SysYParser.ParamContext> paramCtxs =funcRParamsCtx.param();
+                if(!paramCtxs.isEmpty()){
+                    boolean isQualified=true;
+                    if(paramsType.size()!=paramCtxs.size()) isQualified=false;
+                    else{
+                        int minSize= Math.min(paramCtxs.size(), paramsType.size());
+                        for(int index=0;index<minSize;index++){
+                            Type type = (Type)visitParam(paramCtxs.get(index)); //TODO 会导致少遍历一些ctx
+                            if(!type.equals(paramsType.get(index)))
+                                isQualified=false;
+                        }
                     }
+                    if(!isQualified)
+                        report(8,ctx.IDENT().getSymbol().getLine());
                 }
-                if(!isQualified)
-                    report(8,ctx.IDENT().getSymbol().getLine());
             }
             return (T)functionType.getRetType();
         }
