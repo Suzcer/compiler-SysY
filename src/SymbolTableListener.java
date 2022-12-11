@@ -126,8 +126,8 @@ public class SymbolTableListener extends SysYParserBaseListener {
         Symbol symbol = currentScope.resolve(varName);
         if (symbol == null)
             report(1, ctx.IDENT().getSymbol().getLine());
-        else if(symbol instanceof FunctionSymbol)
-            report(11,ctx.IDENT().getSymbol().getLine());
+//        else if(symbol instanceof FunctionSymbol)
+//            report(11,ctx.IDENT().getSymbol().getLine());
     }
 
     @Override
