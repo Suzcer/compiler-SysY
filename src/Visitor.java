@@ -214,7 +214,8 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
                 return (T) ptr;
             }
         }
-        return (T) symbol.getType();
+        if(symbol!=null) return (T) symbol.getType();
+        return null;
     }
 
     @Override
