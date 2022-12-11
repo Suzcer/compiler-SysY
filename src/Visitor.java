@@ -128,9 +128,9 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
                 } else {
                     // int a[23][67];
                     int dimensions = varDefCtx.L_BRACKT().size();
-                    ArrayType mostInner = new ArrayType(type, 1, 0);    //这个count在lab3不予考虑
-                    ArrayType ptr = mostInner;
-                    int cnt = 1;
+                    BasicType mostInner = (BasicType) type;
+                    ArrayType ptr = new ArrayType(mostInner,1,1);// lab3的count不予考虑
+                    int cnt = 2;
                     while (cnt <= dimensions) {
                         ptr = new ArrayType(ptr, 1, cnt);
                         cnt++;
@@ -200,13 +200,18 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         if (symbol instanceof ArraySymbol) {
             int cnt = ctx.L_BRACKT().size();
             ArraySymbol arraySymbol = (ArraySymbol) symbol;
-            Type type = arraySymbol.getType();
-            if (type instanceof ArrayType) {
-                ArrayType arrayType = (ArrayType) type;
+            Type ptr = arraySymbol.getType();
+            if (ptr instanceof ArrayType) {
                 while (cnt-- > 0) {
-                    arrayType = (ArrayType) arrayType.getSubType();
+                    if(ptr instanceof ArrayType)
+                        ptr = ((ArrayType) ptr).getSubType();
+                    else if (ptr instanceof BasicType) {
+                        ptr = (BasicType) ptr;      //其实如果不是 ArrayType 则无需任何操作
+                    }else{
+                        // 可能需要报错
+                    }
                 }
-                return (T) arrayType;
+                return (T) ptr;
             }
         }
         return null;
