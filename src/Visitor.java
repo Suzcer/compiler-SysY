@@ -261,6 +261,12 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
     }
 
     @Override
+    public T visitParam(SysYParser.ParamContext ctx) {
+        SysYParser.ExpContext expCtx = ctx.exp();
+        return this.visit(expCtx);
+    }
+
+    @Override
     public T visitUnaryOpExp(SysYParser.UnaryOpExpContext ctx) {
         return super.visitUnaryOpExp(ctx);
     }
