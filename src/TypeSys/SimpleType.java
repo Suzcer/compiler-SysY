@@ -4,5 +4,6 @@ public enum SimpleType {
     INT,
     DOUBLE,
     FLOAT,
-    VOID
+    VOID,
+    ERROR
 }

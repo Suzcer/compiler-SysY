@@ -126,7 +126,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
                     VariableSymbol symbol = new VariableSymbol(varName, type);
                     currentScope.define(symbol);
                 } else {
-                    // int a[23][67];
+                    // int a[1][9];
                     int dimensions = varDefCtx.L_BRACKT().size();
                     BasicType mostInner = (BasicType) type;
                     ArrayType ptr = new ArrayType(mostInner,1,1);// lab3的count不予考虑
@@ -272,15 +272,16 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         int lineNum = 0;
         if (ctx.PLUS() != null) lineNum = ctx.PLUS().getSymbol().getLine();
         if (ctx.MINUS() != null) lineNum = ctx.MINUS().getSymbol().getLine();
-        if (lType instanceof BasicType) {
+        if (lType instanceof BasicType && rType instanceof BasicType) {
             BasicType lt = (BasicType) lType;
-            if (lt.getSimpleType() != SimpleType.INT)
-                report(6, lineNum);
-        }
-        if (rType instanceof BasicType) {
             BasicType rt = (BasicType) rType;
-            if (rt.getSimpleType() != SimpleType.INT)
+            if (rt.getSimpleType() != SimpleType.INT || lt.getSimpleType() != SimpleType.INT){
                 report(6, lineNum);
+                return (T)new BasicType(SimpleType.ERROR);
+            }
+        }else{
+            report(6,lineNum);
+            return (T)new BasicType(SimpleType.ERROR);
         }
         return (T) lType;
     }
@@ -392,8 +393,8 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         SysYParser.ExpContext expCtx = ctx.exp();
         Type lType = (Type) visitLVal(lValCtx);
         Type rType = (Type) this.visit(expCtx);
-        if (lType != null)                     //TODO 删除此行则出现空指针异常
-            if (!lType.equals(rType))
+//        if (lType != null)                     //TODO 删除此行则出现空指针异常
+            if (!lType.equals(rType) && !rType.equals(new BasicType(SimpleType.ERROR)))
                 report(5, lValCtx.IDENT().getSymbol().getLine());
         return null;
     }
