@@ -32,7 +32,7 @@ public class ArrayType implements Type{
 
     @Override
     public String toString() {
-        return super.toString();
+        return subType.toString()+"  ;dimension"+dimension;
     }
 
     @Override
