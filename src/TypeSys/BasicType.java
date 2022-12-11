@@ -22,8 +22,9 @@ public class BasicType implements Type{
 
     @Override
     public boolean equals(Object obj) {
-        if(obj instanceof BasicType objType){
-            return objType.getSimpleType().equals(this.getSimpleType());
+        if(obj instanceof BasicType){
+            BasicType basicType = (BasicType) obj;
+            return basicType.getSimpleType().equals(this.getSimpleType());
         }
         return false;
     }
