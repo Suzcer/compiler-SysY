@@ -1,5 +1,4 @@
-import TypeSys.FunctionType;
-import TypeSys.Type;
+import TypeSys.*;
 import org.antlr.v4.runtime.Vocabulary;
 import symtable.*;
 
@@ -110,18 +109,34 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
     @Override
     public T visitVarDecl(SysYParser.VarDeclContext ctx) {
-        super.visitVarDecl(ctx);
 
         String typeName = ctx.bType().getText();
-        Type type = (Type) globalScope.resolve(typeName);
+        Type type = (Type) globalScope.resolve(typeName);               // TODO 涉及到 globalScope，需要考虑是否能够解析出来
         List<SysYParser.VarDefContext> varDefContexts = ctx.varDef();
         for (SysYParser.VarDefContext varDefCtx : varDefContexts) {
+            visitVarDef(varDefCtx);
             String varName = varDefCtx.IDENT().getText();
             Symbol tmp = currentScope.getSymbols().get(varName);        // 如果和当前作用域的重名了，才需要进行错误报告
             if (tmp != null) report(3, varDefCtx.IDENT().getSymbol().getLine());
             else {
-                VariableSymbol symbol = new VariableSymbol(varName, type);
-                currentScope.define(symbol);
+                // 确定是数组还是VariableSymbol
+                if (varDefCtx.L_BRACKT().isEmpty()) {
+                    VariableSymbol symbol = new VariableSymbol(varName, type);
+                    currentScope.define(symbol);
+                } else {
+                    // int a[23][67];
+                    int dimensions = varDefCtx.L_BRACKT().size();
+                    ArrayType mostInner = new ArrayType(type, 1, 0);    //这个count在lab3不予考虑
+                    ArrayType ptr = mostInner;
+                    int cnt = 1;
+                    while (cnt <= dimensions) {
+                        ptr = new ArrayType(ptr, 1, cnt);
+                        cnt++;
+                    }
+                    ArraySymbol symbol = new ArraySymbol(varName, ptr);
+                    currentScope.define(symbol);
+                }
+                // 保证初始化是正确的，因此这里不予处理
             }
         }
         return null;
@@ -172,21 +187,33 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
     public T visitLVal(SysYParser.LValContext ctx) {
         String varName = ctx.IDENT().getText();
         Symbol symbol = currentScope.resolve(varName);
-        List<SysYParser.ExpContext> expCtx = ctx.exp();
+        List<SysYParser.ExpContext> expCtxs = ctx.exp();
 
         if (symbol == null)
             report(1, ctx.IDENT().getSymbol().getLine());
-//        else if(symbol instanceof FunctionSymbol)         // 处理应该在Assign中处理
-//            report(11,ctx.IDENT().getSymbol().getLine());
-        else if((symbol instanceof VariableSymbol||symbol instanceof FunctionSymbol) && !expCtx.isEmpty())
-            report(9,ctx.IDENT().getSymbol().getLine());
+        else if ((symbol instanceof VariableSymbol || symbol instanceof FunctionSymbol) && !expCtxs.isEmpty())
+            report(9, ctx.IDENT().getSymbol().getLine());
+        super.visitLVal(ctx);
 
-        return super.visitLVal(ctx);
+        if(symbol instanceof ArraySymbol){
+            int cnt=ctx.L_BRACKT().size();
+            ArraySymbol arraySymbol = (ArraySymbol) symbol;
+            Type type = arraySymbol.getType();
+            if(type instanceof ArrayType){
+                ArrayType arrayType = (ArrayType) type;
+                while(cnt-->0){
+                    arrayType=(ArrayType) arrayType.getSubType();
+                }
+                return (T)arrayType;
+            }
+        }
+        return null;
     }
 
     @Override
     public T visitNumberExp(SysYParser.NumberExpContext ctx) {
-        return super.visitNumberExp(ctx);
+        super.visitNumberExp(ctx);
+        return (T) new BasicType(SimpleType.INT);
     }
 
     @Override
@@ -211,12 +238,43 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
     @Override
     public T visitMulExp(SysYParser.MulExpContext ctx) {
-        return super.visitMulExp(ctx);
+        Type lType = (Type) this.visit(ctx.exp().get(0));
+        Type rType = (Type) this.visit(ctx.exp().get(1));
+        int lineNum = 0;
+        if (ctx.MUL() != null) lineNum = ctx.MUL().getSymbol().getLine();
+        if (ctx.MOD() != null) lineNum = ctx.MOD().getSymbol().getLine();
+        if (ctx.DIV() != null) lineNum = ctx.DIV().getSymbol().getLine();
+        if (lType instanceof BasicType) {
+            BasicType lt = (BasicType) lType;
+            if (lt.getSimpleType() != SimpleType.INT)
+                report(6, lineNum);
+        }
+        if (rType instanceof BasicType) {
+            BasicType rt = (BasicType) rType;
+            if (rt.getSimpleType() != SimpleType.INT)
+                report(6, lineNum);
+        }
+        return (T) lType;        //开始的两行已经进行遍历往后的节点了
     }
 
     @Override
     public T visitPlusExp(SysYParser.PlusExpContext ctx) {
-        return super.visitPlusExp(ctx);
+        Type lType = (Type) this.visit(ctx.exp().get(0));
+        Type rType = (Type) this.visit(ctx.exp().get(1));
+        int lineNum = 0;
+        if (ctx.PLUS() != null) lineNum = ctx.PLUS().getSymbol().getLine();
+        if (ctx.MINUS() != null) lineNum = ctx.MINUS().getSymbol().getLine();
+        if (lType instanceof BasicType) {
+            BasicType lt = (BasicType) lType;
+            if (lt.getSimpleType() != SimpleType.INT)
+                report(6, lineNum);
+        }
+        if (rType instanceof BasicType) {
+            BasicType rt = (BasicType) rType;
+            if (rt.getSimpleType() != SimpleType.INT)
+                report(6, lineNum);
+        }
+        return (T) lType;
     }
 
     @Override
@@ -241,7 +299,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         String funName = ctx.IDENT().getText();
         Symbol tmp = currentScope.resolve(funName);
         if (tmp != null) report(4, ctx.IDENT().getSymbol().getLine());
-        else{
+        else {
             //3. 构建 FunctionSymbol，设置 funcType
             FunctionSymbol fun = new FunctionSymbol(funName, currentScope);
             fun.setFuncType(ft);
@@ -264,9 +322,9 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
     @Override
     public T visitFuncFParams(SysYParser.FuncFParamsContext ctx) {
-        if(ctx!=null){
+        if (ctx != null) {
             List<SysYParser.FuncFParamContext> funcFParamContexts = ctx.funcFParam();
-            for(SysYParser.FuncFParamContext each:funcFParamContexts) visitFuncFParam(each);
+            for (SysYParser.FuncFParamContext each : funcFParamContexts) visitFuncFParam(each);
         }
         return null;
     }
@@ -274,7 +332,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
     @Override
     public T visitFuncFParam(SysYParser.FuncFParamContext ctx) {
         List<SysYParser.ExpContext> expCtxs = ctx.exp();
-        for(SysYParser.ExpContext each:expCtxs) this.visit(each);
+        for (SysYParser.ExpContext each : expCtxs) this.visit(each);
 
         String typeName = ctx.bType().getText();
         Type type = (Type) globalScope.resolve(typeName);
@@ -315,12 +373,15 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         SysYParser.LValContext lValCtx = ctx.lVal();
         String varName = lValCtx.IDENT().getText();
         Symbol symbol = currentScope.resolve(varName);
-        if(symbol instanceof FunctionSymbol)
-            report(11,lValCtx.IDENT().getSymbol().getLine());
+        if (symbol instanceof FunctionSymbol)
+            report(11, lValCtx.IDENT().getSymbol().getLine());
 
         SysYParser.ExpContext expCtx = ctx.exp();
-        visitLVal(lValCtx);
-        this.visit(expCtx);
+        Type lType = (Type)visitLVal(lValCtx);
+        Type rType = (Type)this.visit(expCtx);
+
+        if(!lType.equals(rType))
+            report(5,lValCtx.IDENT().getSymbol().getLine());
         return null;
     }
 

@@ -1,6 +1,14 @@
 package TypeSys;
 
+/**
+ * int a[10]; -> dimension=1,subType=BasicType,count=10;
+ *
+ * double b[2][3]; -> dimension=2,subType=ArrayType,count=2
+ *                    dimension=1,subType=double,count=3
+ */
 public class ArrayType implements Type{
+
+    private int dimension;
     private Type subType;
     private int count;
 
@@ -12,10 +20,27 @@ public class ArrayType implements Type{
         return count;
     }
 
-    public ArrayType(Type subType,int count){
-        this.count=count;
-        this.subType=subType;
+    public int getDimension(){
+        return dimension;
     }
 
+    public ArrayType(Type subType,int count,int dimension){
+        this.count=count;
+        this.subType=subType;
+        this.dimension=dimension;
+    }
 
+    @Override
+    public String toString() {
+        return super.toString();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(obj instanceof ArrayType){
+            ArrayType arrayType = (ArrayType) obj;
+            return arrayType.dimension==this.dimension;
+        }
+        return false;
+    }
 }

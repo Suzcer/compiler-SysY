@@ -1,3 +1,4 @@
+import TypeSys.Type;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -58,7 +59,7 @@ public class Main {
         ParseTree tree = sysYParser.program();
         String[] ruleNames = sysYParser.getRuleNames();
         Vocabulary vocabulary = sysYParser.getVocabulary();
-        Visitor visitor = new Visitor();
+        Visitor visitor = new Visitor<Type>();
         visitor.setRulesName(ruleNames);
         visitor.setVocabulary(vocabulary);
         visitor.setMp(mp);

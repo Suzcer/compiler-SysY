@@ -1,6 +1,7 @@
 package symtable;
 
 import TypeSys.FunctionType;
+import TypeSys.Type;
 
 public class FunctionSymbol extends BaseScope implements Symbol {
 
@@ -13,7 +14,8 @@ public class FunctionSymbol extends BaseScope implements Symbol {
         this.funcType = funcType;
     }
 
-    public FunctionType getFuncType() {
+    @Override
+    public Type getType() {
         return funcType;
     }
 
