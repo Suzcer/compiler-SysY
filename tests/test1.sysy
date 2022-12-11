@@ -1,4 +1,8 @@
-int test(){
-    int a;
-    int a;
+int main(){
+
+}
+
+int main(){
+    int ok=1;
+    int ok;
 }

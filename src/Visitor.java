@@ -229,8 +229,6 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         String typeName = ctx.funcType().getText();
         Type retType = (Type) globalScope.resolve(typeName);//解析类型名，要去全局的作用域解析
         SysYParser.FuncFParamsContext funcFParamsCtx = ctx.funcFParams();
-        SysYParser.FuncTypeContext funcTypeCtx = ctx.funcType();
-        SysYParser.BlockContext blockCtx = ctx.block();
 
         ArrayList<Type> paramsType = new ArrayList<>();
         if (funcFParamsCtx != null) {       // 如果有参数
@@ -247,18 +245,19 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         String funName = ctx.IDENT().getText();
         Symbol tmp = currentScope.resolve(funName);
         if (tmp != null) report(4, ctx.IDENT().getSymbol().getLine());
+        else{
+            //3. 构建 FunctionSymbol，设置 funcType
+            FunctionSymbol fun = new FunctionSymbol(funName, currentScope);
+            fun.setFuncType(ft);
+            currentScope.define(fun);
+            currentScope = fun;
 
-        //3. 构建 FunctionSymbol，设置 funcType
-        FunctionSymbol fun = new FunctionSymbol(funName, currentScope);
-        fun.setFuncType(ft);
-        currentScope.define(fun);
-        currentScope = fun;
+            //4. 使用父类的遍历
+            super.visitFuncDef(ctx);
 
-        //4. 使用父类的遍历
-        super.visitFuncDef(ctx);
-
-        //5. 退出后修改作用域
-        currentScope = currentScope.getEnclosingScope();
+            //5. 退出后修改作用域
+            currentScope = currentScope.getEnclosingScope();
+        }
         return null;
     }
 
