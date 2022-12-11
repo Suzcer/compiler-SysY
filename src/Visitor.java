@@ -379,7 +379,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         SysYParser.ExpContext expCtx = ctx.exp();
         Type lType = (Type)visitLVal(lValCtx);
         Type rType = (Type)this.visit(expCtx);
-
+        if(lType!=null)
         if(!lType.equals(rType))
             report(5,lValCtx.IDENT().getSymbol().getLine());
         return null;
