@@ -95,7 +95,7 @@ public class SymbolTableListener extends SysYParserBaseListener {
         List<SysYParser.VarDefContext> varDefContexts = ctx.varDef();
         for (SysYParser.VarDefContext var_ctx : varDefContexts) {
             String varName = var_ctx.IDENT().getText();
-            Symbol tmp = currentScope.resolve(varName);
+            Symbol tmp = currentScope.getSymbols().get(varName);
             if (tmp != null) report(3, var_ctx.IDENT().getSymbol().getLine());
             else {
                 VariableSymbol symbol = new VariableSymbol(varName, type);
@@ -130,9 +130,6 @@ public class SymbolTableListener extends SysYParserBaseListener {
             report(11,ctx.IDENT().getSymbol().getLine());
     }
 
-    @Override
-    public void exitLVal(SysYParser.LValContext ctx) {
-    }
 
     @Override
     public void enterCallFuncExp(SysYParser.CallFuncExpContext ctx) {
