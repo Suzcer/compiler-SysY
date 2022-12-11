@@ -249,20 +249,21 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         Type lType = (Type) this.visit(ctx.exp().get(0));
         Type rType = (Type) this.visit(ctx.exp().get(1));
         int lineNum = 0;
-        if (ctx.MUL() != null) lineNum = ctx.MUL().getSymbol().getLine();
         if (ctx.MOD() != null) lineNum = ctx.MOD().getSymbol().getLine();
+        if (ctx.MUL() != null) lineNum = ctx.MUL().getSymbol().getLine();
         if (ctx.DIV() != null) lineNum = ctx.DIV().getSymbol().getLine();
-        if (lType instanceof BasicType) {
+        if (lType instanceof BasicType && rType instanceof BasicType) {
             BasicType lt = (BasicType) lType;
-            if (lt.getSimpleType() != SimpleType.INT)
-                report(6, lineNum);
-        }
-        if (rType instanceof BasicType) {
             BasicType rt = (BasicType) rType;
-            if (rt.getSimpleType() != SimpleType.INT)
+            if (rt.getSimpleType() != SimpleType.INT || lt.getSimpleType() != SimpleType.INT){
                 report(6, lineNum);
+                return (T)new BasicType(SimpleType.ERROR);
+            }
+        }else{
+            report(6,lineNum);
+            return (T)new BasicType(SimpleType.ERROR);
         }
-        return (T) lType;        //开始的两行已经进行遍历往后的节点了
+        return (T) lType;
     }
 
     @Override
