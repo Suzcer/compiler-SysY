@@ -20,6 +20,8 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
     private int localScopeCounter = 0;
 
+    private FunctionSymbol currentFun;
+
     private void report(int errType, int lineNo) {
         System.err.println("Error type " + errType + " at Line " + lineNo + ":");
     }
@@ -295,6 +297,8 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         }
         FunctionType ft = new FunctionType(retType, paramsType);
 
+
+
         //2. 报告函数重定义错误
         String funName = ctx.IDENT().getText();
         Symbol tmp = currentScope.resolve(funName);
@@ -306,10 +310,13 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
             currentScope.define(fun);
             currentScope = fun;
 
-            //4. 使用父类的遍历
+            //4. 记录当前的函数，与返回值类型对比,注意应当在 retType之前记录curFun，否则returnStmt无法得知curFun
+            currentFun = fun;
+
+            //5. 使用父类的遍历
             super.visitFuncDef(ctx);
 
-            //5. 退出后修改作用域
+            //6. 退出后修改作用域
             currentScope = currentScope.getEnclosingScope();
         }
         return null;
@@ -379,7 +386,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         SysYParser.ExpContext expCtx = ctx.exp();
         Type lType = (Type)visitLVal(lValCtx);
         Type rType = (Type)this.visit(expCtx);
-        if(lType!=null)
+        if(lType!=null)                     //TODO 删除此行则出现空指针异常
         if(!lType.equals(rType))
             report(5,lValCtx.IDENT().getSymbol().getLine());
         return null;
@@ -419,6 +426,9 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
     @Override
     public T visitReturnStmt(SysYParser.ReturnStmtContext ctx) {
+        Type type = (Type)this.visit(ctx.exp());
+        if(!type.equals(currentFun.getType()))
+            report(7,ctx.RETURN().getSymbol().getLine());
         return super.visitReturnStmt(ctx);
     }
 }

@@ -28,4 +28,9 @@ public class BasicType implements Type{
         }
         return false;
     }
+
+    @Override
+    public String toString() {
+        return simpleType.toString();
+    }
 }
