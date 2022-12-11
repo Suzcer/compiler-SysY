@@ -119,8 +119,9 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
     @Override
     public T visitVarDecl(SysYParser.VarDeclContext ctx) {
-        List<SysYParser.VarDefContext> varDefCtxs = ctx.varDef();
-        for (SysYParser.VarDefContext each : varDefCtxs) visitVarDef(each);
+//        List<SysYParser.VarDefContext> varDefCtxs = ctx.varDef();
+//        for (SysYParser.VarDefContext each : varDefCtxs) visitVarDef(each);
+        super.visitVarDecl(ctx);
 
         String typeName = ctx.bType().getText();
         Type type = (Type) globalScope.resolve(typeName);
