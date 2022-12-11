@@ -415,8 +415,10 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         SysYParser.LValContext lValCtx = ctx.lVal();
         String varName = lValCtx.IDENT().getText();
         Symbol symbol = currentScope.resolve(varName);
-        if (symbol instanceof FunctionSymbol)
+        if (symbol instanceof FunctionSymbol){
             report(11, lValCtx.IDENT().getSymbol().getLine());
+            return null;
+        }
 
         SysYParser.ExpContext expCtx = ctx.exp();
         Type lType = (Type) visitLVal(lValCtx);
