@@ -95,7 +95,7 @@ public class SymbolTableListener extends SysYParserBaseListener {
         List<SysYParser.VarDefContext> varDefContexts = ctx.varDef();
         for (SysYParser.VarDefContext var_ctx : varDefContexts) {
             String varName = var_ctx.IDENT().getText();
-            Symbol tmp = currentScope.getSymbols().get(varName);
+            Symbol tmp = currentScope.getSymbols().get(varName);        // 如果和当前作用域的重名了，才需要进行错误报告
             if (tmp != null) report(3, var_ctx.IDENT().getSymbol().getLine());
             else {
                 VariableSymbol symbol = new VariableSymbol(varName, type);
@@ -111,7 +111,7 @@ public class SymbolTableListener extends SysYParserBaseListener {
         List<SysYParser.ConstDefContext> constDefContexts = ctx.constDef();
         for (SysYParser.ConstDefContext const_ctx : constDefContexts) {
             String varName = const_ctx.IDENT().getText();
-            Symbol tmp = currentScope.resolve(varName);
+            Symbol tmp = currentScope.getSymbols().get(varName);
             if (tmp != null) report(3, const_ctx.IDENT().getSymbol().getLine());
             else {
                 VariableSymbol symbol = new VariableSymbol(varName, type);
@@ -124,10 +124,14 @@ public class SymbolTableListener extends SysYParserBaseListener {
     public void enterLVal(SysYParser.LValContext ctx) {
         String varName = ctx.IDENT().getText();
         Symbol symbol = currentScope.resolve(varName);
+        List<SysYParser.ExpContext> expCtx = ctx.exp();
+
         if (symbol == null)
             report(1, ctx.IDENT().getSymbol().getLine());
         else if(symbol instanceof FunctionSymbol)
             report(11,ctx.IDENT().getSymbol().getLine());
+        else if(symbol instanceof VariableSymbol && !expCtx.isEmpty())
+            report(9,ctx.IDENT().getSymbol().getLine());
     }
 
 

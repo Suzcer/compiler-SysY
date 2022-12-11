@@ -2,6 +2,6 @@ int a(){
 
 }
 int main(){
-    a=9;
+    int b=a[3];
 }
 
