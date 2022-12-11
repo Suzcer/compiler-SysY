@@ -20,7 +20,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
     private int localScopeCounter = 0;
 
-    private FunctionSymbol currentFun;
+    private Type currentRetType;
 
     private void report(int errType, int lineNo) {
         System.err.println("Error type " + errType + " at Line " + lineNo + ":");
@@ -311,7 +311,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
             currentScope = fun;
 
             //4. 记录当前的函数，与返回值类型对比,注意应当在 retType之前记录curFun，否则returnStmt无法得知curFun
-            currentFun = fun;
+            currentRetType = retType;
 
             //5. 使用父类的遍历
             super.visitFuncDef(ctx);
@@ -427,7 +427,8 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
     @Override
     public T visitReturnStmt(SysYParser.ReturnStmtContext ctx) {
         Type type = (Type)this.visit(ctx.exp());
-        if(!type.equals(currentFun.getType()))
+        if(type!=null)
+        if(!type.equals(currentRetType))
             report(7,ctx.RETURN().getSymbol().getLine());
         return super.visitReturnStmt(ctx);
     }
