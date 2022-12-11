@@ -105,14 +105,6 @@ public class SymbolTableListener extends SysYParserBaseListener {
     }
 
     @Override
-    public void enterLVal(SysYParser.LValContext ctx) {
-        String varName = ctx.IDENT().getText();
-        Symbol tmp = currentScope.resolve(varName);
-        if(tmp instanceof FunctionSymbol)
-            report(11,ctx.IDENT().getSymbol().getLine());
-    }
-
-    @Override
     public void enterConstDecl(SysYParser.ConstDeclContext ctx) {
         String typeName = ctx.bType().getText();
         Type type = (Type) globalScope.resolve(typeName);
@@ -134,6 +126,8 @@ public class SymbolTableListener extends SysYParserBaseListener {
         Symbol symbol = currentScope.resolve(varName);
         if (symbol == null)
             report(1, ctx.IDENT().getSymbol().getLine());
+        else if(symbol instanceof FunctionSymbol)
+            report(11,ctx.IDENT().getSymbol().getLine());
     }
 
     @Override
