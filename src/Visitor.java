@@ -39,8 +39,8 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
     private void report(int errType, int lineNo) {
         hasError = true;
-//        if (!second)
-//            System.err.println("Error type " + errType + " at Line " + lineNo + ":");
+        if (!second)
+            System.err.println("Error type " + errType + " at Line " + lineNo + ":");
     }
 
     public void setSecond(boolean second) {
@@ -57,7 +57,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
     private HashMap<String, String> mp;
 
-    private String renameRecord = "a.q";
+    private String renameRecord;
 
     public void setRulesName(String[] ruleNames) {
         this.ruleNames = ruleNames;
@@ -125,7 +125,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
                 String str = currentScope.getName() + "." + oriName;
 
                 if (type.equals("IDENT") && str.equals(renameRecord)) {
-                        System.err.print(rename + " ");
+                    System.err.print(rename + " ");
                 } else {
                     System.err.print(oriName + " ");
                 }
@@ -141,7 +141,6 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         localScopeCounter = 0;                            // 保证两次命名名称相同
         globalScope = new GlobalScope(null);
         currentScope = globalScope;
-        SysYParser.CompUnitContext compUnitCtx = ctx.compUnit();
         super.visitProgram(ctx);
         currentScope = currentScope.getEnclosingScope();
         return null;
@@ -159,7 +158,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
     @Override
     public T visitVarDecl(SysYParser.VarDeclContext ctx) {
-
+        if (second) return super.visitVarDecl(ctx);
         String typeName = ctx.bType().getText();
         Type type = globalScope.resolveType(typeName);              // TODO 涉及到 globalScope，需要考虑是否能够解析出来
         List<SysYParser.VarDefContext> varDefContexts = ctx.varDef();
@@ -167,7 +166,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
             // renameRecord记录
             if (varDefCtx.IDENT().getSymbol().getLine() == lineNo
                     && varDefCtx.IDENT().getSymbol().getCharPositionInLine() == column)
-                renameRecord = currentScope.getName()+"."+baseTrans(varDefCtx.IDENT().getSymbol().getText());
+                renameRecord = currentScope.getName() + "." + baseTrans(varDefCtx.IDENT().getSymbol().getText());
 
 //            visitVarDef(varDefCtx);
             String varName = varDefCtx.IDENT().getText();
@@ -199,6 +198,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
     @Override
     public T visitConstDecl(SysYParser.ConstDeclContext ctx) {
+        if(second) return super.visitConstDecl(ctx);
         String typeName = ctx.bType().getText();
         Type type = globalScope.resolveType(typeName);
         List<SysYParser.ConstDefContext> constDefContexts = ctx.constDef();
@@ -206,7 +206,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
             // renameRecord记录
             if (constCtx.IDENT().getSymbol().getLine() == lineNo
                     && constCtx.IDENT().getSymbol().getCharPositionInLine() == column)
-                renameRecord = currentScope.getName()+"."+baseTrans(constCtx.IDENT().getSymbol().getText());
+                renameRecord = currentScope.getName() + "." + baseTrans(constCtx.IDENT().getSymbol().getText());
 
             String varName = constCtx.IDENT().getText();
             Symbol tmp = currentScope.getSymbols().get(varName);
@@ -227,10 +227,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
     @Override
     public T visitConstExp(SysYParser.ConstExpContext ctx) {
-        SysYParser.ExpContext expCtx = ctx.exp();
-        if (expCtx != null)
-            this.visit(expCtx);
-        return null;
+        return super.visitConstExp(ctx);
     }
 
     @Override
@@ -245,6 +242,8 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
     @Override
     public T visitLVal(SysYParser.LValContext ctx) {
+        if(second) return super.visitLVal(ctx);
+
         String varName = ctx.IDENT().getText();
         Symbol symbol = currentScope.resolve(varName);
         List<SysYParser.ExpContext> expCtxs = ctx.exp();
@@ -252,7 +251,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         // renameRecord记录
         if (ctx.IDENT().getSymbol().getLine() == lineNo
                 && ctx.IDENT().getSymbol().getCharPositionInLine() == column)
-            renameRecord = currentScope.getName()+"."+baseTrans(ctx.IDENT().getSymbol().getText());
+            renameRecord = currentScope.getName() + "." + baseTrans(ctx.IDENT().getSymbol().getText());
 
         if (symbol == null)
             report(1, ctx.IDENT().getSymbol().getLine());
@@ -287,13 +286,15 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
     @Override
     public T visitCallFuncExp(SysYParser.CallFuncExpContext ctx) {
+        if(second) return super.visitCallFuncExp(ctx);
+
         String varName = ctx.IDENT().getText();
         Symbol symbol = currentScope.resolve(varName);
 
         // renameRecord记录
         if (ctx.IDENT().getSymbol().getLine() == lineNo
                 && ctx.IDENT().getSymbol().getCharPositionInLine() == column)
-            renameRecord = currentScope.getName()+"."+baseTrans(ctx.IDENT().getSymbol().getText());
+            renameRecord = currentScope.getName() + "." + baseTrans(ctx.IDENT().getSymbol().getText());
 
         if (symbol == null)
             report(2, ctx.IDENT().getSymbol().getLine());
@@ -329,12 +330,13 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
     @Override
     public T visitParam(SysYParser.ParamContext ctx) {
-        SysYParser.ExpContext expCtx = ctx.exp();
-        return this.visit(expCtx);
+        return super.visitParam(ctx);
     }
 
     @Override
     public T visitUnaryOpExp(SysYParser.UnaryOpExpContext ctx) {
+        if(second) return super.visitUnaryOpExp(ctx);
+
         Type type = (Type) this.visit(ctx.exp());
         int lineNum = 0;
         if (ctx.unaryOp().PLUS() != null) lineNum = ctx.unaryOp().PLUS().getSymbol().getLine();
@@ -354,6 +356,8 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
     @Override
     public T visitMulExp(SysYParser.MulExpContext ctx) {
+        if(second) return super.visitMulExp(ctx);
+
         Type lType = (Type) this.visit(ctx.exp().get(0));
         Type rType = (Type) this.visit(ctx.exp().get(1));
         int lineNum = 0;
@@ -376,6 +380,8 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
     @Override
     public T visitPlusExp(SysYParser.PlusExpContext ctx) {
+        if(second) return super.visitPlusExp(ctx);
+
         Type lType = (Type) this.visit(ctx.exp().get(0));
         Type rType = (Type) this.visit(ctx.exp().get(1));
         int lineNum = 0;
@@ -397,6 +403,8 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
     @Override
     public T visitFuncDef(SysYParser.FuncDefContext ctx) {
+//        if(second) return super.visitFuncDef(ctx);        需要修改Scope
+
         //1. 构建functionType, 获取 retType 和 paramsType
         String typeName = ctx.funcType().getText();
         Type retType = globalScope.resolveType(typeName);//解析类型名，要去全局的作用域解析
@@ -426,12 +434,12 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
             currentScope = fun;
 
             //4.
-            if(funcFParamsCtx!=null){
+            if (funcFParamsCtx != null) {
                 List<SysYParser.FuncFParamContext> funcFParamCtx = funcFParamsCtx.funcFParam();
                 for (SysYParser.FuncFParamContext paramCtx : funcFParamCtx) {
                     if (paramCtx.IDENT().getSymbol().getLine() == lineNo
                             && paramCtx.IDENT().getSymbol().getCharPositionInLine() == column)
-                        renameRecord = currentScope.getName()+"."+baseTrans(paramCtx.IDENT().getSymbol().getText());
+                        renameRecord = currentScope.getName() + "." + baseTrans(paramCtx.IDENT().getSymbol().getText());
                 }
             }
 
@@ -457,15 +465,12 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
     @Override
     public T visitFuncFParams(SysYParser.FuncFParamsContext ctx) {
-        if (ctx != null) {
-            List<SysYParser.FuncFParamContext> funcFParamContexts = ctx.funcFParam();
-            for (SysYParser.FuncFParamContext each : funcFParamContexts) visitFuncFParam(each);
-        }
-        return null;
+        return super.visitFuncFParams(ctx);
     }
 
     @Override
     public T visitFuncFParam(SysYParser.FuncFParamContext ctx) {
+        if(second) return super.visitFuncFParam(ctx);
         List<SysYParser.ExpContext> expCtxs = ctx.exp();
         for (SysYParser.ExpContext each : expCtxs) this.visit(each);
 
@@ -482,6 +487,8 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
     @Override
     public T visitBlock(SysYParser.BlockContext ctx) {
+//        if(second) return super.visitBlock(ctx);      //block需要修改currentScope
+
         //0.control next, 需要该值，防止next修改之后退不出去
         boolean blockNext = next;
 
@@ -512,6 +519,8 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
     @Override
     public T visitAssignStmt(SysYParser.AssignStmtContext ctx) {
+        if (second) return super.visitAssignStmt(ctx);
+
         SysYParser.LValContext lValCtx = ctx.lVal();
         String varName = lValCtx.IDENT().getText();
         Symbol symbol = currentScope.resolve(varName);
@@ -521,23 +530,18 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         }
 
         SysYParser.ExpContext expCtx = ctx.exp();
-        if(!second){
-            Type lType = (Type) visitLVal(lValCtx);
-            Type rType = (Type) this.visit(expCtx);
-            if (lType != null)                     //TODO 删除此行则出现空指针异常
-                if (!lType.equals(rType) && !rType.equals(new BasicType(SimpleType.ERROR)))
-                    report(5, lValCtx.IDENT().getSymbol().getLine());
-        }else{
-            super.visitAssignStmt(ctx);
-        }
+        Type lType = (Type) visitLVal(lValCtx);
+        Type rType = (Type) this.visit(expCtx);
+        if (lType != null)                     //TODO 删除此行则出现空指针异常
+            if (!lType.equals(rType) && !rType.equals(new BasicType(SimpleType.ERROR)))
+                report(5, lValCtx.IDENT().getSymbol().getLine());
+
         return null;
     }
 
     @Override
     public T visitExpStmt(SysYParser.ExpStmtContext ctx) {
-        SysYParser.ExpContext expCtx = ctx.exp();
-        this.visit(expCtx);
-        return null;
+        return super.visitExpStmt(ctx);
     }
 
     @Override
@@ -570,6 +574,8 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
      */
     @Override
     public T visitReturnStmt(SysYParser.ReturnStmtContext ctx) {
+        if (second) return super.visitReturnStmt(ctx);
+
         if (ctx.exp() == null) {
             if (!(currentRetType instanceof BasicType))
                 report(7, ctx.RETURN().getSymbol().getLine());
@@ -579,14 +585,10 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
                     report(7, ctx.RETURN().getSymbol().getLine());
             }
         } else {
-            if(second)
-                super.visitReturnStmt(ctx);
-            else {
-                Type type = (Type) this.visit(ctx.exp());
-                if (type != null)                                  //TODO
-                    if (!type.equals(currentRetType))
-                        report(7, ctx.RETURN().getSymbol().getLine());
-            }
+            Type type = (Type) this.visit(ctx.exp());
+            if (type != null)                                  //TODO
+                if (!type.equals(currentRetType))
+                    report(7, ctx.RETURN().getSymbol().getLine());
         }
 
         return null;
