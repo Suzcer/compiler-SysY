@@ -38,9 +38,9 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
     private boolean next = false;
 
     private void report(int errType, int lineNo) {
-        hasError = true;
-        if (!second)
-            System.err.println("Error type " + errType + " at Line " + lineNo + ":");
+//        hasError = true;
+//        if (!second)
+//            System.err.println("Error type " + errType + " at Line " + lineNo + ":");
     }
 
     public void setSecond(boolean second) {
@@ -298,7 +298,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
             report(2, ctx.IDENT().getSymbol().getLine());
         else if (!(symbol instanceof FunctionSymbol)) { //检查是否为变量的symbol而不是函数的symbol
             report(10, ctx.IDENT().getSymbol().getLine());
-        } else {          // 检查参数传递是否正确
+        } else if(!second){          // 检查参数传递是否正确
             FunctionType functionType = (FunctionType) symbol.getType();
             ArrayList<Type> paramsType = functionType.getParamsType();  //定义的时候
 
@@ -337,7 +337,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
     @Override
     public T visitUnaryOpExp(SysYParser.UnaryOpExpContext ctx) {
-//        if (second) return super.visitUnaryOpExp(ctx);
+        if (second) return super.visitUnaryOpExp(ctx);
 
         Type type = (Type) this.visit(ctx.exp());
         int lineNum = 0;
@@ -358,7 +358,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
     @Override
     public T visitMulExp(SysYParser.MulExpContext ctx) {
-//        if (second) return super.visitMulExp(ctx);
+        if (second) return super.visitMulExp(ctx);
 
         Type lType = (Type) this.visit(ctx.exp().get(0));
         Type rType = (Type) this.visit(ctx.exp().get(1));
@@ -382,7 +382,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
     @Override
     public T visitPlusExp(SysYParser.PlusExpContext ctx) {
-//        if (second) return super.visitPlusExp(ctx);
+        if (second) return super.visitPlusExp(ctx);
 
         Type lType = (Type) this.visit(ctx.exp().get(0));
         Type rType = (Type) this.visit(ctx.exp().get(1));
