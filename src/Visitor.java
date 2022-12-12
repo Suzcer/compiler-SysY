@@ -39,8 +39,8 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
     private void report(int errType, int lineNo) {
         hasError = true;
-        if (!second)
-            System.err.println("Error type " + errType + " at Line " + lineNo + ":");
+//        if (!second)
+//            System.err.println("Error type " + errType + " at Line " + lineNo + ":");
     }
 
     public void setSecond(boolean second) {
