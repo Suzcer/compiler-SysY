@@ -122,7 +122,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
                 }
 
                 String oriName = baseTrans(node.getText());
-                String str = currentScope.getName() + "." + oriName;
+                String str = currentScope.findScope(node.getText()) + "." + oriName;
 
                 if (type.equals("IDENT") && str.equals(renameRecord)) {
                     System.err.print(rename + " ");
@@ -158,40 +158,34 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
     @Override
     public T visitVarDecl(SysYParser.VarDeclContext ctx) {
-        if (second) return super.visitVarDecl(ctx);
+//        if (second) return super.visitVarDecl(ctx);               // TODO 如果不注释掉会出现问题，不太清楚是什么问题
         String typeName = ctx.bType().getText();
         Type type = globalScope.resolveType(typeName);              // TODO 涉及到 globalScope，需要考虑是否能够解析出来
         List<SysYParser.VarDefContext> varDefContexts = ctx.varDef();
         for (SysYParser.VarDefContext varDefCtx : varDefContexts) {
-            // renameRecord记录
-            if (varDefCtx.IDENT().getSymbol().getLine() == lineNo
-                    && varDefCtx.IDENT().getSymbol().getCharPositionInLine() == column)
-                renameRecord = currentScope.getName() + "." + baseTrans(varDefCtx.IDENT().getSymbol().getText());
-
-//            visitVarDef(varDefCtx);
             String varName = varDefCtx.IDENT().getText();
-            Symbol tmp = currentScope.getSymbols().get(varName);        // 如果和当前作用域的重名了，才需要进行错误报告
+            Symbol tmp = currentScope.getSymbols().get(varName);    // 如果和当前作用域的重名了，才需要进行错误报告
             if (tmp != null) report(3, varDefCtx.IDENT().getSymbol().getLine());
             else {
-                // 确定是数组还是VariableSymbol
-                if (varDefCtx.L_BRACKT().isEmpty()) {
+                int dimensions = varDefCtx.L_BRACKT().size();       // int a[1][2];
+                if (dimensions == 0) {   //VariableSymbol
                     VariableSymbol symbol = new VariableSymbol(varName, type);
                     currentScope.define(symbol);
                 } else {
-                    // int a[1][2];
-                    int dimensions = varDefCtx.L_BRACKT().size();
                     BasicType mostInner = (BasicType) type;
                     ArrayType ptr = new ArrayType(mostInner, 1, 1);   // lab3的count不予考虑
-                    int cnt = 2;
-                    while (cnt <= dimensions) {
+                    for (int cnt = 2; cnt <= dimensions; cnt++) {
                         ptr = new ArrayType(ptr, 1, cnt);
-                        cnt++;
                     }
                     ArraySymbol symbol = new ArraySymbol(varName, ptr);
                     currentScope.define(symbol);
                 }
                 // 保证初始化是正确的，因此这里不予处理
             }
+            // renameRecord记录
+            if (varDefCtx.IDENT().getSymbol().getLine() == lineNo
+                    && varDefCtx.IDENT().getSymbol().getCharPositionInLine() == column)
+                renameRecord = currentScope.findScope(varName) + "." + baseTrans(varDefCtx.IDENT().getSymbol().getText());
         }
         return super.visitVarDecl(ctx);
     }
@@ -206,7 +200,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
             // renameRecord记录
             if (constCtx.IDENT().getSymbol().getLine() == lineNo
                     && constCtx.IDENT().getSymbol().getCharPositionInLine() == column)
-                renameRecord = currentScope.getName() + "." + baseTrans(constCtx.IDENT().getSymbol().getText());
+                renameRecord = currentScope.findScope(constCtx.IDENT().getText()) + "." + baseTrans(constCtx.IDENT().getSymbol().getText());
 
             String varName = constCtx.IDENT().getText();
             Symbol tmp = currentScope.getSymbols().get(varName);
@@ -251,7 +245,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         // renameRecord记录
         if (ctx.IDENT().getSymbol().getLine() == lineNo
                 && ctx.IDENT().getSymbol().getCharPositionInLine() == column)
-            renameRecord = currentScope.getName() + "." + baseTrans(ctx.IDENT().getSymbol().getText());
+            renameRecord = currentScope.findScope(ctx.IDENT().getText()) + "." + baseTrans(ctx.IDENT().getSymbol().getText());
 
         if (symbol == null)
             report(1, ctx.IDENT().getSymbol().getLine());
@@ -294,7 +288,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         // renameRecord记录
         if (ctx.IDENT().getSymbol().getLine() == lineNo
                 && ctx.IDENT().getSymbol().getCharPositionInLine() == column)
-            renameRecord = currentScope.getName() + "." + baseTrans(ctx.IDENT().getSymbol().getText());
+            renameRecord = currentScope.findScope(ctx.IDENT().getText()) + "." + baseTrans(ctx.IDENT().getSymbol().getText());
 
         if (symbol == null)
             report(2, ctx.IDENT().getSymbol().getLine());
@@ -415,24 +409,25 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         SysYParser.FuncFParamsContext funcFParamsCtx = ctx.funcFParams();
 
         ArrayList<Type> paramsType = new ArrayList<>();
+        ArrayList<Symbol> defineList = new ArrayList<>();
         if (funcFParamsCtx != null) {       // 如果有参数
             List<SysYParser.FuncFParamContext> funcFParamCtx = funcFParamsCtx.funcFParam();
             for (SysYParser.FuncFParamContext paramCtx : funcFParamCtx) {
                 String paramTypeName = paramCtx.bType().getText();
                 Type paramType = globalScope.resolveType(paramTypeName);
                 // 以下逻辑处理函数参数如 int a[][2]
-                if(paramCtx.L_BRACKT().isEmpty())
+                if (paramCtx.L_BRACKT().isEmpty()) {
                     paramsType.add(paramType);
-                else{
-                    int dimensions= paramCtx.L_BRACKT().size();
+                    defineList.add(new VariableSymbol(paramCtx.IDENT().getText(), paramType));
+                } else {
+                    int dimensions = paramCtx.L_BRACKT().size();
                     BasicType mostInner = (BasicType) paramType;
-                    ArrayType ptr= new ArrayType(mostInner,1,1);
-                    int cnt=2;
-                    while(cnt<=dimensions){
-                        ptr=new ArrayType(ptr,1,cnt);
-                        cnt++;
+                    ArrayType ptr = new ArrayType(mostInner, 1, 1);
+                    for (int cnt = 2; cnt <= dimensions; cnt++) {
+                        ptr = new ArrayType(ptr, 1, cnt);
                     }
                     paramsType.add(ptr);
+                    defineList.add(new ArraySymbol(paramCtx.IDENT().getText(), ptr));
                 }
             }
         }
@@ -450,14 +445,10 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
             currentScope.define(fun);
             currentScope = fun;
 
-            //4.重命名
-            if (funcFParamsCtx != null) {
-                List<SysYParser.FuncFParamContext> funcFParamCtx = funcFParamsCtx.funcFParam();
-                for (SysYParser.FuncFParamContext paramCtx : funcFParamCtx) {
-                    if (paramCtx.IDENT().getSymbol().getLine() == lineNo
-                            && paramCtx.IDENT().getSymbol().getCharPositionInLine() == column)
-                        renameRecord = currentScope.getName() + "." + baseTrans(paramCtx.IDENT().getSymbol().getText());
-                }
+            //4. 进入函数作用域后，对其形参进行define
+            if (!defineList.isEmpty()) {
+                for (Symbol symbol : defineList)
+                    currentScope.define(symbol);
             }
 
             //5. 记录当前的函数，与返回值类型对比,注意应当在 retType之前记录curFun，否则returnStmt无法得知curFun
@@ -468,6 +459,16 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
             //7. 使用父类的遍历
             super.visitFuncDef(ctx);
+
+            //4.重命名
+            if (funcFParamsCtx != null) {
+                List<SysYParser.FuncFParamContext> funcFParamCtx = funcFParamsCtx.funcFParam();
+                for (SysYParser.FuncFParamContext paramCtx : funcFParamCtx) {
+                    if (paramCtx.IDENT().getSymbol().getLine() == lineNo
+                            && paramCtx.IDENT().getSymbol().getCharPositionInLine() == column)
+                        renameRecord = currentScope.findScope(paramCtx.IDENT().getText()) + "." + baseTrans(paramCtx.IDENT().getSymbol().getText());
+                }
+            }
 
             //8. 退出后修改作用域
             currentScope = currentScope.getEnclosingScope();
@@ -485,21 +486,12 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         return super.visitFuncFParams(ctx);
     }
 
+    /**
+     * 在funcDef中接管了
+     **/
     @Override
     public T visitFuncFParam(SysYParser.FuncFParamContext ctx) {
-        if (second) return super.visitFuncFParam(ctx);
-        List<SysYParser.ExpContext> expCtxs = ctx.exp();
-        for (SysYParser.ExpContext each : expCtxs) this.visit(each);
-
-        String typeName = ctx.bType().getText();
-
-        Type type = globalScope.resolveType(typeName);
-
-        String varName = ctx.IDENT().getText();
-        VariableSymbol symbol = new VariableSymbol(varName, type);
-        currentScope.define(symbol);
-
-        return null;
+        return super.visitFuncFParam(ctx);
     }
 
     @Override

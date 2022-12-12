@@ -12,5 +12,8 @@ public class GlobalScope extends BaseScope {
         define(new BaseSymbol("double",new BasicType(SimpleType.DOUBLE)));
     }
 
-
+    @Override
+    public String toString() {
+        return "GlobalScope";
+    }
 }

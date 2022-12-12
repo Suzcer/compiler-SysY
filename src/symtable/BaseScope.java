@@ -66,8 +66,18 @@ public class BaseScope implements Scope {
         }
     }
 
+
     @Override
-    public String toString() {
-        return "";
+    public Scope findScope(String name) {
+        Symbol symbol = symbols.get(name);
+        if (symbol != null) {
+            return this;
+        }
+        if (enclosingScope != null) {
+            return enclosingScope.findScope(name);
+        }
+        if(this instanceof GlobalScope)
+            return this;
+        return null;
     }
 }

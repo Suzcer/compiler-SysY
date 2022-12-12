@@ -22,4 +22,7 @@ public interface Scope {
 
     /** 解决冲突问题  **/
     public Type resolveType(String name);
+
+    /** 找到最根本的作用域 **/
+    public Scope findScope(String name);
 }
