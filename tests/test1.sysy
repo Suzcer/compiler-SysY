@@ -1,4 +1,10 @@
-void a(){}
-int main(){
-    int b;
+int a() {
+    return 10;
+}
+
+int main() {
+    int a = 3;
+    int b = 4;
+    a = 5;
+    return a;
 }

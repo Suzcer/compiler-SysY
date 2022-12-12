@@ -60,18 +60,19 @@ public class Main {
         String[] ruleNames = sysYParser.getRuleNames();
         Vocabulary vocabulary = sysYParser.getVocabulary();
         Visitor visitor = new Visitor<Type>();
+        int lineNo = Integer.parseInt(args[1]);
+        int column = Integer.parseInt(args[2]);
+        String name = args[3];
+        visitor.setArgs(lineNo,column,name);
         visitor.visit(tree);
 
         if(!visitor.hasError()){
-            PrintVisitor printVisitor=new PrintVisitor();
-            printVisitor.setRulesName(ruleNames);
-            printVisitor.setVocabulary(vocabulary);
-            printVisitor.setMp(mp);
 
-            int lineNo = Integer.parseInt(args[1]);
-            int column = Integer.parseInt(args[2]);
-            String name = args[3];
-            printVisitor.visit(tree);
+            visitor.setRulesName(ruleNames);
+            visitor.setVocabulary(vocabulary);
+            visitor.setMp(mp);
+            visitor.setSecond(true);
+            visitor.visit(tree);
         }
 
         /**
