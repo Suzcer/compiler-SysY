@@ -5,6 +5,10 @@ import TypeSys.Type;
 import java.util.Map;
 
 public interface Scope {
+
+
+    public void putScope(String name,Scope scope);
+    public Scope getSubScope(String name) ;
     public String getName();
 
     public void setName(String name);
