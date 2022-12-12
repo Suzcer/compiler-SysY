@@ -579,10 +579,14 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
                     report(7, ctx.RETURN().getSymbol().getLine());
             }
         } else {
-            Type type = (Type) super.visitReturnStmt(ctx);
-            if (type != null)                                  //TODO
-                if (!type.equals(currentRetType))
-                    report(7, ctx.RETURN().getSymbol().getLine());
+            if(second)
+                super.visitReturnStmt(ctx);
+            else {
+                Type type = (Type) this.visit(ctx.exp());
+                if (type != null)                                  //TODO
+                    if (!type.equals(currentRetType))
+                        report(7, ctx.RETURN().getSymbol().getLine());
+            }
         }
 
         return null;
