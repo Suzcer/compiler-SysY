@@ -192,7 +192,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
     @Override
     public T visitConstDecl(SysYParser.ConstDeclContext ctx) {
-        if (second) return super.visitConstDecl(ctx);
+//        if (second) return super.visitConstDecl(ctx);
         String typeName = ctx.bType().getText();
         Type type = globalScope.resolveType(typeName);
         List<SysYParser.ConstDefContext> constDefContexts = ctx.constDef();
@@ -215,8 +215,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
     @Override
     public T visitVarDef(SysYParser.VarDefContext ctx) {
-        super.visitVarDef(ctx);
-        return null;
+        return super.visitVarDef(ctx);
     }
 
     @Override
@@ -269,7 +268,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
             }
         }
         if (symbol != null) return (T) symbol.getType();
-        return null;
+        return null; //already 遍历
     }
 
     @Override
@@ -323,7 +322,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
             return (T) functionType.getRetType();
         }
 
-        return null;        //TODO , 可能需要修改，保证不会重复输出错误
+        return super.visitCallFuncExp(ctx);        //TODO , 可能需要修改，保证不会重复输出错误
     }
 
     @Override
@@ -473,7 +472,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
             //8. 退出后修改作用域
             currentScope = currentScope.getEnclosingScope();
         }
-        return null;
+        return null;// already 遍历
     }
 
     @Override
@@ -518,7 +517,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         //3. exitBlock, next为false表示不是紧跟函数的block，需要退出
         if (!blockNext)
             currentScope = currentScope.getEnclosingScope();
-        return null;
+        return null;    //already 遍历
     }
 
     @Override
@@ -545,7 +544,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
             if (!lType.equals(rType) && !rType.equals(new BasicType(SimpleType.ERROR)))
                 report(5, lValCtx.IDENT().getSymbol().getLine());
 
-        return null;
+        return null; //already 遍历
     }
 
     @Override
@@ -600,7 +599,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
                     report(7, ctx.RETURN().getSymbol().getLine());
         }
 
-        return null;
+        return null;//already 遍历
     }
 }
 
