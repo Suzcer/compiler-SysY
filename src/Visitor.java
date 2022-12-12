@@ -314,8 +314,6 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
                         int minSize = Math.min(paramCtxs.size(), paramsType.size());
                         for (int index = 0; index < minSize; index++) {
                             Type type = (Type) visitParam(paramCtxs.get(index)); //TODO 会导致少遍历一些ctx
-                            System.err.print("传进来的: "+type);
-                            System.err.println(";      初始定义的: "+paramsType.get(index));
                             if (type == null || !type.equals(paramsType.get(index)))
                                 isQualified = false;
                         }
