@@ -534,7 +534,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
     @Override
     public T visitAssignStmt(SysYParser.AssignStmtContext ctx) {
-//        if (second) return super.visitAssignStmt(ctx);
+        if (second) return super.visitAssignStmt(ctx);
 
         SysYParser.LValContext lValCtx = ctx.lVal();
         String varName = lValCtx.IDENT().getText();
