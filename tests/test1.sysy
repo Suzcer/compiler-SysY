@@ -3,6 +3,6 @@ int a(int c,int b[3]) {
 }
 
 int main() {
-    int b[3];
+    int b[3][4];
     int c = a(2,b);
 }

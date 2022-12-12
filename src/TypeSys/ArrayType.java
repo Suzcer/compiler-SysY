@@ -39,7 +39,10 @@ public class ArrayType implements Type{
     public boolean equals(Object obj) {
         if(obj instanceof ArrayType){
             ArrayType arrayType = (ArrayType) obj;
-            return arrayType.dimension==this.dimension;
+            if(arrayType.dimension>1)
+                return (this.dimension==arrayType.dimension && this.subType.equals(arrayType.subType));
+
+            return this.subType.equals(arrayType.subType);      // ==1 的情况
         }
         return false;
     }
