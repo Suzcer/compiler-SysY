@@ -1,4 +1,4 @@
 void a(){}
 int main(){
-    int b=-a;
+    int b;
 }
