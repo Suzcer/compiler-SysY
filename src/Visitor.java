@@ -320,10 +320,10 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
                     }
                     if (!isQualified)
                         report(8, ctx.IDENT().getSymbol().getLine());
-                } else if (paramsType != null) {             // 参数列表不为空但实际没给参数
+                } else if (!paramsType.isEmpty()) {             // 参数列表不为空但实际没给参数
                     report(8, ctx.IDENT().getSymbol().getLine());
                 }
-            } else if (paramsType != null) {     // 参数列表不为空但实际没给参数
+            } else if (!paramsType.isEmpty()) {     // 参数列表不为空但实际没给参数
                 report(8, ctx.IDENT().getSymbol().getLine());
             }
             return (T) functionType.getRetType();
