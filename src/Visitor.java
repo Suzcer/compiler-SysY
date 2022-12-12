@@ -128,7 +128,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 //                    System.err.print("xxx: " + str + "   ");
                     if (str.equals(renameRecord)) {
                         System.err.print(rename + " ");
-                    }else System.err.print(oriName + " ");
+                    } else System.err.print(oriName + " ");
                 } else {
                     System.err.print(oriName + " ");
                 }
@@ -298,7 +298,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
             report(2, ctx.IDENT().getSymbol().getLine());
         else if (!(symbol instanceof FunctionSymbol)) { //检查是否为变量的symbol而不是函数的symbol
             report(10, ctx.IDENT().getSymbol().getLine());
-        } else if(!second){          // 检查参数传递是否正确
+        } else {          // 检查参数传递是否正确
             FunctionType functionType = (FunctionType) symbol.getType();
             ArrayList<Type> paramsType = functionType.getParamsType();  //定义的时候
 
@@ -308,7 +308,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
                 if (!paramCtxs.isEmpty()) {
                     boolean isQualified = true;
                     if (paramsType.size() != paramCtxs.size()) isQualified = false;
-                    else {
+                    else if (!second) {
                         int minSize = Math.min(paramCtxs.size(), paramsType.size());
                         for (int index = 0; index < minSize; index++) {
                             Type type = (Type) visitParam(paramCtxs.get(index)); //TODO 会导致少遍历一些ctx
@@ -478,7 +478,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
             //8. 退出后修改作用域
             currentScope = currentScope.getEnclosingScope();
         }
-        return null;// already 遍历
+        return null;     // already 遍历
     }
 
     @Override
@@ -543,7 +543,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
             report(11, lValCtx.IDENT().getSymbol().getLine());
             return null;
         }
-        if(!second){
+        if (!second) {
             SysYParser.ExpContext expCtx = ctx.exp();
             Type lType = (Type) visitLVal(lValCtx);
             Type rType = (Type) this.visit(expCtx);
@@ -553,7 +553,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
         }
 
-        return super.visitAssignStmt(ctx); //already 遍历
+        return null; //already 遍历
     }
 
     @Override
@@ -601,13 +601,11 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
                 if (basicType.getSimpleType() != SimpleType.VOID)
                     report(7, ctx.RETURN().getSymbol().getLine());
             }
-        } else {
-            if(!second){
-                Type type = (Type) this.visit(ctx.exp());
-                if (type != null)                                  //TODO
-                    if (!type.equals(currentRetType))
-                        report(7, ctx.RETURN().getSymbol().getLine());
-            }
+        } else if (!second) {
+            Type type = (Type) this.visit(ctx.exp());
+            if (type != null)                                  //TODO
+                if (!type.equals(currentRetType))
+                    report(7, ctx.RETURN().getSymbol().getLine());
         }
 
         return super.visitReturnStmt(ctx);            //already 遍历
