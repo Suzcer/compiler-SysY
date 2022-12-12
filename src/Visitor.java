@@ -198,7 +198,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
     @Override
     public T visitConstDecl(SysYParser.ConstDeclContext ctx) {
-        if(second) return super.visitConstDecl(ctx);
+        if (second) return super.visitConstDecl(ctx);
         String typeName = ctx.bType().getText();
         Type type = globalScope.resolveType(typeName);
         List<SysYParser.ConstDefContext> constDefContexts = ctx.constDef();
@@ -242,7 +242,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
     @Override
     public T visitLVal(SysYParser.LValContext ctx) {
-        if(second) return super.visitLVal(ctx);
+        if (second) return super.visitLVal(ctx);
 
         String varName = ctx.IDENT().getText();
         Symbol symbol = currentScope.resolve(varName);
@@ -286,7 +286,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
     @Override
     public T visitCallFuncExp(SysYParser.CallFuncExpContext ctx) {
-        if(second) return super.visitCallFuncExp(ctx);
+        if (second) return super.visitCallFuncExp(ctx);
 
         String varName = ctx.IDENT().getText();
         Symbol symbol = currentScope.resolve(varName);
@@ -314,13 +314,19 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
                         int minSize = Math.min(paramCtxs.size(), paramsType.size());
                         for (int index = 0; index < minSize; index++) {
                             Type type = (Type) visitParam(paramCtxs.get(index)); //TODO 会导致少遍历一些ctx
+                            System.err.print("传进来的: "+type);
+                            System.err.println(";      初始定义的: "+paramsType.get(index));
                             if (type == null || !type.equals(paramsType.get(index)))
                                 isQualified = false;
                         }
                     }
                     if (!isQualified)
                         report(8, ctx.IDENT().getSymbol().getLine());
+                } else if (paramsType != null) {             // 参数列表不为空但实际没给参数
+                    report(8, ctx.IDENT().getSymbol().getLine());
                 }
+            } else if (paramsType != null) {     // 参数列表不为空但实际没给参数
+                report(8, ctx.IDENT().getSymbol().getLine());
             }
             return (T) functionType.getRetType();
         }
@@ -335,7 +341,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
     @Override
     public T visitUnaryOpExp(SysYParser.UnaryOpExpContext ctx) {
-        if(second) return super.visitUnaryOpExp(ctx);
+        if (second) return super.visitUnaryOpExp(ctx);
 
         Type type = (Type) this.visit(ctx.exp());
         int lineNum = 0;
@@ -356,7 +362,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
     @Override
     public T visitMulExp(SysYParser.MulExpContext ctx) {
-        if(second) return super.visitMulExp(ctx);
+        if (second) return super.visitMulExp(ctx);
 
         Type lType = (Type) this.visit(ctx.exp().get(0));
         Type rType = (Type) this.visit(ctx.exp().get(1));
@@ -380,7 +386,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
     @Override
     public T visitPlusExp(SysYParser.PlusExpContext ctx) {
-        if(second) return super.visitPlusExp(ctx);
+        if (second) return super.visitPlusExp(ctx);
 
         Type lType = (Type) this.visit(ctx.exp().get(0));
         Type rType = (Type) this.visit(ctx.exp().get(1));
@@ -416,7 +422,20 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
             for (SysYParser.FuncFParamContext paramCtx : funcFParamCtx) {
                 String paramTypeName = paramCtx.bType().getText();
                 Type paramType = globalScope.resolveType(paramTypeName);
-                paramsType.add(paramType);
+                // 以下逻辑处理函数参数如 int a[][2]
+                if(paramCtx.L_BRACKT().isEmpty())
+                    paramsType.add(paramType);
+                else{
+                    int dimensions= paramCtx.L_BRACKT().size();
+                    BasicType mostInner = (BasicType) paramType;
+                    ArrayType ptr= new ArrayType(mostInner,1,1);
+                    int cnt=2;
+                    while(cnt<=dimensions){
+                        ptr=new ArrayType(ptr,1,cnt);
+                        cnt++;
+                    }
+                    paramsType.add(ptr);
+                }
             }
         }
         FunctionType ft = new FunctionType(retType, paramsType);
@@ -433,7 +452,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
             currentScope.define(fun);
             currentScope = fun;
 
-            //4.
+            //4.重命名
             if (funcFParamsCtx != null) {
                 List<SysYParser.FuncFParamContext> funcFParamCtx = funcFParamsCtx.funcFParam();
                 for (SysYParser.FuncFParamContext paramCtx : funcFParamCtx) {
@@ -443,16 +462,16 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
                 }
             }
 
-            //4. 记录当前的函数，与返回值类型对比,注意应当在 retType之前记录curFun，否则returnStmt无法得知curFun
+            //5. 记录当前的函数，与返回值类型对比,注意应当在 retType之前记录curFun，否则returnStmt无法得知curFun
             currentRetType = retType;
 
-            //5. modify next
+            //6. modify next
             next = true;
 
-            //6. 使用父类的遍历
+            //7. 使用父类的遍历
             super.visitFuncDef(ctx);
 
-            //7. 退出后修改作用域
+            //8. 退出后修改作用域
             currentScope = currentScope.getEnclosingScope();
         }
         return null;
@@ -470,7 +489,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
     @Override
     public T visitFuncFParam(SysYParser.FuncFParamContext ctx) {
-        if(second) return super.visitFuncFParam(ctx);
+        if (second) return super.visitFuncFParam(ctx);
         List<SysYParser.ExpContext> expCtxs = ctx.exp();
         for (SysYParser.ExpContext each : expCtxs) this.visit(each);
 
