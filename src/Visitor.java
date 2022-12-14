@@ -336,6 +336,100 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
     }
 
     @Override
+    public T visitLtCond(SysYParser.LtCondContext ctx) {
+        if(second) return super.visitLtCond(ctx);
+        Type lType  = (Type) this.visit( ctx.cond().get(0));
+        Type rType  = (Type) this.visit( ctx.cond().get(1));
+        int lineNum = 0;
+        if (ctx.LT() != null) lineNum = ctx.LT().getSymbol().getLine();
+        if (ctx.LE() != null) lineNum = ctx.LE().getSymbol().getLine();
+        if (ctx.GT() != null) lineNum = ctx.GT().getSymbol().getLine();
+        if (ctx.GE() != null) lineNum = ctx.GE().getSymbol().getLine();
+        if (lType instanceof BasicType && rType instanceof BasicType) {
+            BasicType lt = (BasicType) lType;
+            BasicType rt = (BasicType) rType;
+            if (rt.getSimpleType() != SimpleType.INT || lt.getSimpleType() != SimpleType.INT) {
+                report(6, lineNum);
+                return (T) new BasicType(SimpleType.ERROR);
+            }
+        } else {
+            report(6, lineNum);
+            return (T) new BasicType(SimpleType.ERROR);
+        }
+        return (T) lType;
+    }
+
+    @Override
+    public T visitEqCond(SysYParser.EqCondContext ctx) {
+        if(second) return super.visitEqCond(ctx);
+        Type lType  = (Type) this.visit( ctx.cond().get(0));
+        Type rType  = (Type) this.visit( ctx.cond().get(1));
+        int lineNum = 0;
+        if (ctx.EQ() != null) lineNum = ctx.EQ().getSymbol().getLine();
+        if (ctx.NEQ() != null) lineNum = ctx.NEQ().getSymbol().getLine();
+        if (lType instanceof BasicType && rType instanceof BasicType) {
+            BasicType lt = (BasicType) lType;
+            BasicType rt = (BasicType) rType;
+            if (rt.getSimpleType() != SimpleType.INT || lt.getSimpleType() != SimpleType.INT) {
+                report(6, lineNum);
+                return (T) new BasicType(SimpleType.ERROR);
+            }
+        } else {
+            report(6, lineNum);
+            return (T) new BasicType(SimpleType.ERROR);
+        }
+        return (T) lType;
+    }
+
+    @Override
+    public T visitAndCond(SysYParser.AndCondContext ctx) {
+        if(second) return super.visitAndCond(ctx);
+        Type lType  = (Type) this.visit( ctx.cond().get(0));
+        Type rType  = (Type) this.visit( ctx.cond().get(1));
+        int lineNum = 0;
+        if (ctx.AND() != null) lineNum = ctx.AND().getSymbol().getLine();
+        if (lType instanceof BasicType && rType instanceof BasicType) {
+            BasicType lt = (BasicType) lType;
+            BasicType rt = (BasicType) rType;
+            if (rt.getSimpleType() != SimpleType.INT || lt.getSimpleType() != SimpleType.INT) {
+                report(6, lineNum);
+                return (T) new BasicType(SimpleType.ERROR);
+            }
+        } else {
+            report(6, lineNum);
+            return (T) new BasicType(SimpleType.ERROR);
+        }
+        return (T) lType;
+    }
+
+    @Override
+    public T visitOrCond(SysYParser.OrCondContext ctx) {
+        if(second) return super.visitOrCond(ctx);
+        Type lType  = (Type) this.visit( ctx.cond().get(0));
+        Type rType  = (Type) this.visit( ctx.cond().get(1));
+        int lineNum = 0;
+        if (ctx.OR() != null) lineNum = ctx.OR().getSymbol().getLine();
+        if (lType instanceof BasicType && rType instanceof BasicType) {
+            BasicType lt = (BasicType) lType;
+            BasicType rt = (BasicType) rType;
+            if (rt.getSimpleType() != SimpleType.INT || lt.getSimpleType() != SimpleType.INT) {
+                report(6, lineNum);
+                return (T) new BasicType(SimpleType.ERROR);
+            }
+        } else {
+            report(6, lineNum);
+            return (T) new BasicType(SimpleType.ERROR);
+        }
+        return (T) lType;
+    }
+
+    @Override
+    public T visitExpCond(SysYParser.ExpCondContext ctx) {
+        if(second) return super.visitExpCond(ctx);
+        return this.visit(ctx.exp());
+    }
+
+    @Override
     public T visitUnaryOpExp(SysYParser.UnaryOpExpContext ctx) {
         if (second) return super.visitUnaryOpExp(ctx);
 

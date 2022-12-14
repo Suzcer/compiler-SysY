@@ -1,3 +1,8 @@
-int a(int b,int m){
-    return 5;
+int main(){
+    int a=1;
+    int b[2];
+    if(a<b){
+        a=0;
+    }
+    return 0;
 }
