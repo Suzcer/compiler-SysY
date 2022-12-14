@@ -534,7 +534,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         String funName = ctx.IDENT().getText();
         Symbol tmp = currentScope.resolve(funName);
         if (tmp != null) {
-            report(4, ctx.IDENT().getSymbol().getLine());
+//            report(4, ctx.IDENT().getSymbol().getLine());
         } else {
             //3. 构建 FunctionSymbol，设置 funcType
             FunctionSymbol fun = new FunctionSymbol(funName, currentScope);
