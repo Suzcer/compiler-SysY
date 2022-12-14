@@ -38,9 +38,9 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
     private boolean next = false;
 
     private void report(int errType, int lineNo) {
-        hasError = true;
-        if (!second)
-            System.err.println("Error type " + errType + " at Line " + lineNo + ":");
+//        hasError = true;
+//        if (!second)
+//            System.err.println("Error type " + errType + " at Line " + lineNo + ":");
     }
 
     public void setSecond(boolean second) {
@@ -702,10 +702,10 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 //            }
 
         } else if (!second) {
-//            Type type = (Type) this.visit(ctx.exp());
-//            if (type != null)                                  //TODO
-//                if (!type.equals(currentRetType))
-//                    report(7, ctx.RETURN().getSymbol().getLine());
+            Type type = (Type) this.visit(ctx.exp());
+            if (type != null)                                  //TODO 导致 hardtest3 有 extra output
+                if (!type.equals(currentRetType))
+                    report(7, ctx.RETURN().getSymbol().getLine());
         }
         if (!second) return null;            //already 遍历
         return super.visitReturnStmt(ctx);

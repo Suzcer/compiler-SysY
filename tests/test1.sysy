@@ -6,5 +6,6 @@ int c(int a){
 
 int main(){
     int c=9;
-    int a=c(3);
+    int b=c(5);
+    int a=c(3)+a[1];
 }
