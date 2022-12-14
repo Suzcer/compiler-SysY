@@ -224,19 +224,19 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
     @Override
     public T visitConstExp(SysYParser.ConstExpContext ctx) {
-        if(second) return super.visitConstExp(ctx);
+        if (second) return super.visitConstExp(ctx);
         return this.visit(ctx.exp());
     }
 
     @Override
     public T visitPARENS(SysYParser.PARENSContext ctx) {
-        if(second) return super.visitPARENS(ctx);
+        if (second) return super.visitPARENS(ctx);
         return this.visit(ctx.exp());
     }
 
     @Override
     public T visitLvalExp(SysYParser.LvalExpContext ctx) {
-        if(second) return super.visitLvalExp(ctx);
+        if (second) return super.visitLvalExp(ctx);
         return this.visit(ctx.lVal());
     }
 
@@ -254,7 +254,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         }
         int cnt = ctx.L_BRACKT().size();
         if (symbol == null) report(1, ctx.IDENT().getSymbol().getLine());
-        else if ((symbol instanceof VariableSymbol || symbol instanceof FunctionSymbol) && cnt!=0)
+        else if ((symbol instanceof VariableSymbol || symbol instanceof FunctionSymbol) && cnt != 0)
             report(9, ctx.IDENT().getSymbol().getLine());
         super.visitLVal(ctx);
 
@@ -288,7 +288,8 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
         String varName = ctx.IDENT().getText();
         Symbol symbol = globalScope.resolveGlobalFun(varName);// 直接从全局解析就好了
-
+        if(symbol==null) symbol = currentScope.resolve(varName);
+        
         // renameRecord记录
         if (ctx.IDENT().getSymbol().getLine() == lineNo
                 && ctx.IDENT().getSymbol().getCharPositionInLine() == column)
@@ -332,7 +333,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
     @Override
     public T visitParam(SysYParser.ParamContext ctx) {
-        if(second) return super.visitParam(ctx);
+        if (second) return super.visitParam(ctx);
         return this.visit(ctx.exp());               //type
     }
 
@@ -706,7 +707,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
                 if (!type.equals(currentRetType))
                     report(7, ctx.RETURN().getSymbol().getLine());
         }
-        if(!second) return null;            //already 遍历
+        if (!second) return null;            //already 遍历
         return super.visitReturnStmt(ctx);
     }
 }
