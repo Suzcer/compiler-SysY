@@ -1,6 +1,16 @@
 int a[2];
 
+int e(int a){
+    return 1;
+}
+
 int main(){
     int a;
-    return (a)+1;
+    int b[3];
+    int c[b[3]][3];
+    if(a>b[3])
+        c[1][6]=3;
+    while(a && b[3])
+        a= (e(3)+2);
+    return c[2][a];
 }

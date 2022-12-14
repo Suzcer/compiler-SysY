@@ -224,7 +224,8 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
     @Override
     public T visitConstExp(SysYParser.ConstExpContext ctx) {
-        return super.visitConstExp(ctx);
+        if(second) return super.visitConstExp(ctx);
+        return this.visit(ctx.exp());
     }
 
     @Override
@@ -235,7 +236,8 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
     @Override
     public T visitLvalExp(SysYParser.LvalExpContext ctx) {
-        return super.visitLvalExp(ctx);
+        if(second) return super.visitLvalExp(ctx);
+        return this.visit(ctx.lVal());
     }
 
     @Override
@@ -295,6 +297,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         if (symbol == null) report(2, ctx.IDENT().getSymbol().getLine());
         else if (!(symbol instanceof FunctionSymbol)) { //检查是否为变量的symbol而不是函数的symbol
             report(10, ctx.IDENT().getSymbol().getLine());
+            return null;                //second 不会触及此行
         } else {          // 检查参数传递是否正确
             FunctionType functionType = (FunctionType) symbol.getType();
             ArrayList<Type> paramsType = functionType.getParamsType();  //定义的时候
@@ -329,7 +332,8 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
     @Override
     public T visitParam(SysYParser.ParamContext ctx) {
-        return super.visitParam(ctx);
+        if(second) return super.visitParam(ctx);
+        return this.visit(ctx.exp());               //type
     }
 
     @Override
@@ -444,7 +448,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
             report(6, lineNum);
             return (T) new BasicType(SimpleType.ERROR);
         }
-        return super.visitUnaryOpExp(ctx);
+        return this.visit(ctx.exp());       // return type!
     }
 
     @Override
@@ -457,6 +461,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         if (ctx.MOD() != null) lineNum = ctx.MOD().getSymbol().getLine();
         if (ctx.MUL() != null) lineNum = ctx.MUL().getSymbol().getLine();
         if (ctx.DIV() != null) lineNum = ctx.DIV().getSymbol().getLine();
+        // 如果是null的话说明前面已经处理过了
         if (lType instanceof BasicType && rType instanceof BasicType) {
             BasicType lt = (BasicType) lType;
             BasicType rt = (BasicType) rType;

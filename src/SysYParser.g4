@@ -55,7 +55,7 @@ exp : L_PAREN exp R_PAREN  		        #PARENS
    ;
 
 cond
-   : exp #expCond
+   : exp                            #expCond
    | cond (LT | GT | LE | GE) cond  #ltCond
    | cond (EQ | NEQ) cond           #eqCond
    | cond AND cond                  #andCond
