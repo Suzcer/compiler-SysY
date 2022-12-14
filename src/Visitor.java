@@ -686,20 +686,20 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
     public T visitReturnStmt(SysYParser.ReturnStmtContext ctx) {
 //        if (second) return super.visitReturnStmt(ctx);
 
-//        if (ctx.exp() == null) {
-//            if (!(currentRetType instanceof BasicType))
-//                report(7, ctx.RETURN().getSymbol().getLine());
+        if (ctx.exp() == null) {
+            if (!(currentRetType instanceof BasicType))
+                report(7, ctx.RETURN().getSymbol().getLine());
 //            else {
 //                BasicType basicType = (BasicType) currentRetType;
 //                if (basicType.getSimpleType() != SimpleType.VOID)
 //                    report(7, ctx.RETURN().getSymbol().getLine());
 //            }
-//        } else if (!second) {
-//            Type type = (Type) this.visit(ctx.exp());
-//            if (type != null)                                  //TODO
-//                if (!type.equals(currentRetType))
-//                    report(7, ctx.RETURN().getSymbol().getLine());
-//        }
+        } else if (!second) {
+            Type type = (Type) this.visit(ctx.exp());
+            if (type != null)                                  //TODO
+                if (!type.equals(currentRetType))
+                    report(7, ctx.RETURN().getSymbol().getLine());
+        }
 
         return super.visitReturnStmt(ctx);            //already 遍历
     }
