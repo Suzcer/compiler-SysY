@@ -534,7 +534,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         String funName = ctx.IDENT().getText();
         Symbol tmp = currentScope.resolve(funName);
         if (tmp != null) {
-//            report(4, ctx.IDENT().getSymbol().getLine());
+            report(4, ctx.IDENT().getSymbol().getLine());
         } else {
             //3. 构建 FunctionSymbol，设置 funcType
             FunctionSymbol fun = new FunctionSymbol(funName, currentScope);
@@ -636,15 +636,15 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
             report(11, lValCtx.IDENT().getSymbol().getLine());
             return null;
         }
-//        if (!second) {
-//            SysYParser.ExpContext expCtx = ctx.exp();
-//            Type lType = (Type) visitLVal(lValCtx);
-//            Type rType = (Type) this.visit(expCtx);
-//            if (lType != null)                     //TODO 删除此行则出现空指针异常
-//                if (!lType.equals(rType) && !rType.equals(new BasicType(SimpleType.ERROR)))
-//                    report(5, lValCtx.IDENT().getSymbol().getLine());
-//
-//        }
+        if (!second) {
+            SysYParser.ExpContext expCtx = ctx.exp();
+            Type lType = (Type) visitLVal(lValCtx);
+            Type rType = (Type) this.visit(expCtx);
+            if (lType != null)                     //TODO 删除此行则出现空指针异常
+                if (!lType.equals(rType) && !rType.equals(new BasicType(SimpleType.ERROR)))
+                    report(5, lValCtx.IDENT().getSymbol().getLine());
+
+        }
 
         return null; //already 遍历
     }
@@ -686,20 +686,20 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
     public T visitReturnStmt(SysYParser.ReturnStmtContext ctx) {
 //        if (second) return super.visitReturnStmt(ctx);
 
-//        if (ctx.exp() == null) {
-//            if (!(currentRetType instanceof BasicType))
-//                report(7, ctx.RETURN().getSymbol().getLine());
-//            else {
-//                BasicType basicType = (BasicType) currentRetType;
-//                if (basicType.getSimpleType() != SimpleType.VOID)
-//                    report(7, ctx.RETURN().getSymbol().getLine());
-//            }
-//        } else if (!second) {
-//            Type type = (Type) this.visit(ctx.exp());
-//            if (type != null)                                  //TODO
-//                if (!type.equals(currentRetType))
-//                    report(7, ctx.RETURN().getSymbol().getLine());
-//        }
+        if (ctx.exp() == null) {
+            if (!(currentRetType instanceof BasicType))
+                report(7, ctx.RETURN().getSymbol().getLine());
+            else {
+                BasicType basicType = (BasicType) currentRetType;
+                if (basicType.getSimpleType() != SimpleType.VOID)
+                    report(7, ctx.RETURN().getSymbol().getLine());
+            }
+        } else if (!second) {
+            Type type = (Type) this.visit(ctx.exp());
+            if (type != null)                                  //TODO
+                if (!type.equals(currentRetType))
+                    report(7, ctx.RETURN().getSymbol().getLine());
+        }
 
         return super.visitReturnStmt(ctx);            //already 遍历
     }
