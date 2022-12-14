@@ -168,9 +168,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         for (SysYParser.VarDefContext varDefCtx : varDefContexts) {
             String varName = varDefCtx.IDENT().getText();
             Symbol tmp = currentScope.getSymbols().get(varName);    // 如果和当前作用域的重名了，才需要进行错误报告
-            if (tmp != null) {
-//                report(3, varDefCtx.IDENT().getSymbol().getLine());
-            }
+            if (tmp != null) report(3, varDefCtx.IDENT().getSymbol().getLine());
             else {
                 int dimensions = varDefCtx.L_BRACKT().size();       // int a[1][2];
                 if (dimensions == 0) {   //VariableSymbol
@@ -210,9 +208,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
             String varName = constCtx.IDENT().getText();
             Symbol tmp = currentScope.getSymbols().get(varName);
-            if (tmp != null) {
-//                report(3, constCtx.IDENT().getSymbol().getLine());
-            }
+            if (tmp != null) report(3, constCtx.IDENT().getSymbol().getLine());
             else {
                 VariableSymbol symbol = new VariableSymbol(varName, type);
                 currentScope.define(symbol);
@@ -255,9 +251,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
             renameRecord = currentScope.findScope(varName) + "." + baseTrans(ctx.IDENT().getSymbol().getText());
         }
 
-        if (symbol == null){
-//            report(1, ctx.IDENT().getSymbol().getLine());
-        }
+        if (symbol == null) report(1, ctx.IDENT().getSymbol().getLine());
         else if ((symbol instanceof VariableSymbol || symbol instanceof FunctionSymbol) && !expCtxs.isEmpty())
             report(9, ctx.IDENT().getSymbol().getLine());
         super.visitLVal(ctx);
@@ -299,9 +293,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
                 && ctx.IDENT().getSymbol().getCharPositionInLine() == column)
             renameRecord = currentScope.findScope(ctx.IDENT().getText()) + "." + baseTrans(ctx.IDENT().getSymbol().getText());
 
-        if (symbol == null){
-//            report(2, ctx.IDENT().getSymbol().getLine());
-        }
+        if (symbol == null) report(2, ctx.IDENT().getSymbol().getLine());
         else if (!(symbol instanceof FunctionSymbol)) { //检查是否为变量的symbol而不是函数的symbol
             report(10, ctx.IDENT().getSymbol().getLine());
         } else {          // 检查参数传递是否正确
@@ -541,8 +533,9 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         //2. 报告函数重定义错误
         String funName = ctx.IDENT().getText();
         Symbol tmp = currentScope.resolve(funName);
-        if (tmp != null) report(4, ctx.IDENT().getSymbol().getLine());
-        else {
+        if (tmp != null) {
+//            report(4, ctx.IDENT().getSymbol().getLine());
+        } else {
             //3. 构建 FunctionSymbol，设置 funcType
             FunctionSymbol fun = new FunctionSymbol(funName, currentScope);
             fun.setFuncType(ft);
@@ -643,15 +636,15 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
             report(11, lValCtx.IDENT().getSymbol().getLine());
             return null;
         }
-        if (!second) {
-            SysYParser.ExpContext expCtx = ctx.exp();
-            Type lType = (Type) visitLVal(lValCtx);
-            Type rType = (Type) this.visit(expCtx);
-            if (lType != null)                     //TODO 删除此行则出现空指针异常
-                if (!lType.equals(rType) && !rType.equals(new BasicType(SimpleType.ERROR)))
-                    report(5, lValCtx.IDENT().getSymbol().getLine());
-
-        }
+//        if (!second) {
+//            SysYParser.ExpContext expCtx = ctx.exp();
+//            Type lType = (Type) visitLVal(lValCtx);
+//            Type rType = (Type) this.visit(expCtx);
+//            if (lType != null)                     //TODO 删除此行则出现空指针异常
+//                if (!lType.equals(rType) && !rType.equals(new BasicType(SimpleType.ERROR)))
+//                    report(5, lValCtx.IDENT().getSymbol().getLine());
+//
+//        }
 
         return null; //already 遍历
     }
@@ -693,20 +686,20 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
     public T visitReturnStmt(SysYParser.ReturnStmtContext ctx) {
 //        if (second) return super.visitReturnStmt(ctx);
 
-        if (ctx.exp() == null) {
-            if (!(currentRetType instanceof BasicType))
-                report(7, ctx.RETURN().getSymbol().getLine());
-            else {
-                BasicType basicType = (BasicType) currentRetType;
-                if (basicType.getSimpleType() != SimpleType.VOID)
-                    report(7, ctx.RETURN().getSymbol().getLine());
-            }
-        } else if (!second) {
-            Type type = (Type) this.visit(ctx.exp());
-            if (type != null)                                  //TODO
-                if (!type.equals(currentRetType))
-                    report(7, ctx.RETURN().getSymbol().getLine());
-        }
+//        if (ctx.exp() == null) {
+//            if (!(currentRetType instanceof BasicType))
+//                report(7, ctx.RETURN().getSymbol().getLine());
+//            else {
+//                BasicType basicType = (BasicType) currentRetType;
+//                if (basicType.getSimpleType() != SimpleType.VOID)
+//                    report(7, ctx.RETURN().getSymbol().getLine());
+//            }
+//        } else if (!second) {
+//            Type type = (Type) this.visit(ctx.exp());
+//            if (type != null)                                  //TODO
+//                if (!type.equals(currentRetType))
+//                    report(7, ctx.RETURN().getSymbol().getLine());
+//        }
 
         return super.visitReturnStmt(ctx);            //already 遍历
     }
