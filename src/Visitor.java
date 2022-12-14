@@ -684,22 +684,22 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
     public T visitReturnStmt(SysYParser.ReturnStmtContext ctx) {
 //        if (second) return super.visitReturnStmt(ctx);  // 跟 scope 相关，不能删除
 
-//        if (ctx.exp() == null) {
-//            if (!(currentRetType instanceof BasicType))
-//                report(7, ctx.RETURN().getSymbol().getLine());
-            
+        if (ctx.exp() == null) {
+            if (!(currentRetType instanceof BasicType))
+                report(7, ctx.RETURN().getSymbol().getLine());
+
 //            else {                    // ！此部分并不导致多输出，也不导致分数降低
 //                BasicType basicType = (BasicType) currentRetType;
 //                if (basicType.getSimpleType() != SimpleType.VOID)
 //                    report(7, ctx.RETURN().getSymbol().getLine());
 //            }
 
-//        } else if (!second) {
+        } else if (!second) {
 //            Type type = (Type) this.visit(ctx.exp());
 //            if (type != null)                                  //TODO
 //                if (!type.equals(currentRetType))
 //                    report(7, ctx.RETURN().getSymbol().getLine());
-//        }
+        }
         if(!second) return null;            //already 遍历
         return super.visitReturnStmt(ctx);
     }
