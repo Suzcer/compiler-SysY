@@ -126,6 +126,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
                     String str = currentScope.findScope(node.getText()) + "." + oriName;
 //                    System.err.print("yyy: " + currentScope.getName() + "   ");
 //                    System.err.print("xxx: " + str + "   ");
+//                    System.err.print("zzz: " + renameRecord + "   ");
                     if (str.equals(renameRecord)) {
                         System.err.print(rename + " ");
                     } else System.err.print(oriName + " ");
@@ -186,7 +187,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
                 // 保证初始化是正确的，因此这里不予处理
             }
             // renameRecord记录
-            if (varDefCtx.IDENT().getSymbol().getLine() == lineNo
+            if (!second && varDefCtx.IDENT().getSymbol().getLine() == lineNo
                     && varDefCtx.IDENT().getSymbol().getCharPositionInLine() == column) {
                 renameRecord = currentScope.findScope(varName) + "." + baseTrans(varDefCtx.IDENT().getSymbol().getText());
             }
@@ -202,7 +203,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         List<SysYParser.ConstDefContext> constDefContexts = ctx.constDef();
         for (SysYParser.ConstDefContext constCtx : constDefContexts) {
             // renameRecord记录
-            if (constCtx.IDENT().getSymbol().getLine() == lineNo
+            if (!second && constCtx.IDENT().getSymbol().getLine() == lineNo
                     && constCtx.IDENT().getSymbol().getCharPositionInLine() == column)
                 renameRecord = currentScope.findScope(constCtx.IDENT().getText()) + "." + baseTrans(constCtx.IDENT().getSymbol().getText());
 
@@ -248,7 +249,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         Symbol symbol = currentScope.resolve(varName);
 
         // renameRecord记录
-        if (ctx.IDENT().getSymbol().getLine() == lineNo
+        if (!second && ctx.IDENT().getSymbol().getLine() == lineNo
                 && ctx.IDENT().getSymbol().getCharPositionInLine() == column) {
             renameRecord = currentScope.findScope(varName) + "." + baseTrans(ctx.IDENT().getSymbol().getText());
         }
@@ -291,7 +292,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         if(symbol==null) symbol = currentScope.resolve(varName);
 
         // renameRecord记录
-        if (ctx.IDENT().getSymbol().getLine() == lineNo
+        if (!second && ctx.IDENT().getSymbol().getLine() == lineNo
                 && ctx.IDENT().getSymbol().getCharPositionInLine() == column)
             renameRecord = currentScope.findScope(ctx.IDENT().getText()) + "." + baseTrans(ctx.IDENT().getSymbol().getText());
 
@@ -567,7 +568,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
             if (funcFParamsCtx != null) {
                 List<SysYParser.FuncFParamContext> funcFParamCtx = funcFParamsCtx.funcFParam();
                 for (SysYParser.FuncFParamContext paramCtx : funcFParamCtx) {
-                    if (paramCtx.IDENT().getSymbol().getLine() == lineNo
+                    if (!second && paramCtx.IDENT().getSymbol().getLine() == lineNo
                             && paramCtx.IDENT().getSymbol().getCharPositionInLine() == column)
                         renameRecord = currentScope.findScope(paramCtx.IDENT().getText()) + "." + baseTrans(paramCtx.IDENT().getSymbol().getText());
                 }

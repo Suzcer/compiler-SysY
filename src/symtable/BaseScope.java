@@ -48,6 +48,11 @@ public class BaseScope implements Scope {
     }
 
     @Override
+    public String toString() {
+        return name;
+    }
+
+    @Override
     public void define(Symbol symbol) {
         symbols.put(symbol.getName(), symbol);
 //        System.out.println("+" + symbol.getName());

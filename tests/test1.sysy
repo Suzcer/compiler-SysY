@@ -1,11 +1,10 @@
-int a[2];
-
-int c(int a){
-    return 1;
+int a() {
+    return 10;
 }
 
-int main(){
-    int c=9;
-    int b=c(5);
-    int a=c(3)+a[1];
+int main() {
+    int a = 3;
+    int b = 4;
+    a = 5;
+    return a;
 }
