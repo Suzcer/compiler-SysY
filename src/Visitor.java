@@ -243,29 +243,27 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
         String varName = ctx.IDENT().getText();
         Symbol symbol = currentScope.resolve(varName);
-        List<SysYParser.ExpContext> expCtxs = ctx.exp();
 
         // renameRecord记录
         if (ctx.IDENT().getSymbol().getLine() == lineNo
                 && ctx.IDENT().getSymbol().getCharPositionInLine() == column) {
             renameRecord = currentScope.findScope(varName) + "." + baseTrans(ctx.IDENT().getSymbol().getText());
         }
-
+        int cnt = ctx.L_BRACKT().size();
         if (symbol == null) report(1, ctx.IDENT().getSymbol().getLine());
-        else if ((symbol instanceof VariableSymbol || symbol instanceof FunctionSymbol) && !expCtxs.isEmpty())
+        else if ((symbol instanceof VariableSymbol || symbol instanceof FunctionSymbol) && cnt!=0)
             report(9, ctx.IDENT().getSymbol().getLine());
         super.visitLVal(ctx);
 
         if (symbol instanceof ArraySymbol) {
-            int cnt = ctx.L_BRACKT().size();
-            ArraySymbol arraySymbol = (ArraySymbol) symbol;
-            Type ptr = arraySymbol.getType();
+            Type ptr = symbol.getType();
             if (ptr instanceof ArrayType) {
                 while (cnt-- > 0) {
                     if (ptr instanceof ArrayType)
                         ptr = ((ArrayType) ptr).getSubType();
                     else if (ptr instanceof BasicType) {    //此时没有subType，ptr不能是BasicType
                         report(9, ctx.IDENT().getSymbol().getLine());
+                        break;
                     }
                 }
                 return (T) ptr;
@@ -684,12 +682,12 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
      */
     @Override
     public T visitReturnStmt(SysYParser.ReturnStmtContext ctx) {
-//        if (second) return super.visitReturnStmt(ctx);
+//        if (second) return super.visitReturnStmt(ctx);  // 跟 scope 相关，不能删除
 
         if (ctx.exp() == null) {
             if (!(currentRetType instanceof BasicType))
                 report(7, ctx.RETURN().getSymbol().getLine());
-//            else {
+//            else {                    // ！此部分并不导致多输出，也不导致分数降低
 //                BasicType basicType = (BasicType) currentRetType;
 //                if (basicType.getSimpleType() != SimpleType.VOID)
 //                    report(7, ctx.RETURN().getSymbol().getLine());
@@ -700,8 +698,8 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
                 if (!type.equals(currentRetType))
                     report(7, ctx.RETURN().getSymbol().getLine());
         }
-
-        return super.visitReturnStmt(ctx);            //already 遍历
+        if(!second) return null;            //already 遍历
+        return super.visitReturnStmt(ctx);
     }
 }
 
