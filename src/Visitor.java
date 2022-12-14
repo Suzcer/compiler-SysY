@@ -534,7 +534,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         String funName = ctx.IDENT().getText();
         Symbol tmp = currentScope.resolve(funName);
         if (tmp != null) {
-//            report(4, ctx.IDENT().getSymbol().getLine());
+            report(4, ctx.IDENT().getSymbol().getLine());
         } else {
             //3. 构建 FunctionSymbol，设置 funcType
             FunctionSymbol fun = new FunctionSymbol(funName, currentScope);
@@ -636,15 +636,15 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
             report(11, lValCtx.IDENT().getSymbol().getLine());
             return null;
         }
-        if (!second) {
-            SysYParser.ExpContext expCtx = ctx.exp();
-            Type lType = (Type) visitLVal(lValCtx);
-            Type rType = (Type) this.visit(expCtx);
-            if (lType != null)                     //TODO 删除此行则出现空指针异常
-                if (!lType.equals(rType) && !rType.equals(new BasicType(SimpleType.ERROR)))
-                    report(5, lValCtx.IDENT().getSymbol().getLine());
-
-        }
+//        if (!second) {
+//            SysYParser.ExpContext expCtx = ctx.exp();
+//            Type lType = (Type) visitLVal(lValCtx);
+//            Type rType = (Type) this.visit(expCtx);
+//            if (lType != null)                     //TODO 删除此行则出现空指针异常
+//                if (!lType.equals(rType) && !rType.equals(new BasicType(SimpleType.ERROR)))
+//                    report(5, lValCtx.IDENT().getSymbol().getLine());
+//
+//        }
 
         return null; //already 遍历
     }
