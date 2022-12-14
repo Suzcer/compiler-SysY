@@ -229,7 +229,8 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
     @Override
     public T visitPARENS(SysYParser.PARENSContext ctx) {
-        return super.visitPARENS(ctx);
+        if(second) return super.visitPARENS(ctx);
+        return this.visit(ctx.exp());
     }
 
     @Override
