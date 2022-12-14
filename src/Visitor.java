@@ -289,7 +289,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         String varName = ctx.IDENT().getText();
         Symbol symbol = globalScope.resolveGlobalFun(varName);// 直接从全局解析就好了
         if(symbol==null) symbol = currentScope.resolve(varName);
-        
+
         // renameRecord记录
         if (ctx.IDENT().getSymbol().getLine() == lineNo
                 && ctx.IDENT().getSymbol().getCharPositionInLine() == column)
@@ -702,10 +702,10 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 //            }
 
         } else if (!second) {
-            Type type = (Type) this.visit(ctx.exp());
-            if (type != null)                                  //TODO
-                if (!type.equals(currentRetType))
-                    report(7, ctx.RETURN().getSymbol().getLine());
+//            Type type = (Type) this.visit(ctx.exp());
+//            if (type != null)                                  //TODO
+//                if (!type.equals(currentRetType))
+//                    report(7, ctx.RETURN().getSymbol().getLine());
         }
         if (!second) return null;            //already 遍历
         return super.visitReturnStmt(ctx);
