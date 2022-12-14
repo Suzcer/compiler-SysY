@@ -287,7 +287,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 //        if (second) return super.visitCallFuncExp(ctx);
 
         String varName = ctx.IDENT().getText();
-        Symbol symbol = currentScope.resolve(varName);
+        Symbol symbol = globalScope.resolveGlobalFun(varName);// 直接从全局解析就好了
 
         // renameRecord记录
         if (ctx.IDENT().getSymbol().getLine() == lineNo

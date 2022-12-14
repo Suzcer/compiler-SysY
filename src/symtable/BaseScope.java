@@ -53,18 +53,27 @@ public class BaseScope implements Scope {
 //        System.out.println("+" + symbol.getName());
     }
 
+    /**
+     *
+     */
     @Override
     public Symbol resolve(String name) {
         Symbol symbol = symbols.get(name);
-        if (symbol != null) {
-//            System.out.println("*" + name);
+        if (symbol != null)
             return symbol;
-        }
 
-        if (enclosingScope != null) {
+        if (enclosingScope != null)
             return enclosingScope.resolve(name);
-        }
 
+        return null;
+    }
+
+    /** 全局函数和局部变量之间可能重名，导致无法解析全局函数 **/
+    @Override
+    public Symbol resolveGlobalFun(String name) {
+        Symbol tmp = resolve(name);
+        if(tmp instanceof FunctionSymbol)
+            return tmp;
         return null;
     }
 

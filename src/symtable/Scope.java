@@ -24,6 +24,9 @@ public interface Scope {
     /** 比如a=b；这条语句，要找b具体指的是哪个b，即解析 **/
     public Symbol resolve(String name);
 
+    /** 全局函数和局部变量之间可能重名，导致无法解析全局函数 **/
+    public Symbol resolveGlobalFun(String name);
+
     /** 解决冲突问题  **/
     public Type resolveType(String name);
 
