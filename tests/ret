@@ -1,3 +1,4 @@
+/usr/lib/jvm/java-1.11.0-openjdk-amd64/bin/java -javaagent:/opt/idea/idea-IU-222.4345.14/lib/idea_rt.jar=43359:/opt/idea/idea-IU-222.4345.14/bin -Dfile.encoding=UTF-8 -classpath /usr/local/lib/Lab/out/production/Lab:/usr/local/lib/antlr-4.9.1-complete.jar Main /usr/local/lib/Lab/tests/test1.sysy 8 4 d
 Program
   CompUnit
     FuncDef
@@ -18,16 +19,18 @@ Program
       Block
         BlockItem
           Decl
-            VarDecl
+            ConstDecl
+              const CONST[orange]
               BType
                 int INT[orange]
-              VarDef
+              ConstDef
                 d IDENT[red]
                 = ASSIGN[blue]
-                InitVal
-                  Exp
-                    Number
-                      3 INTEGR_CONST[green]
+                ConstInitVal
+                  ConstExp
+                    Exp
+                      Number
+                        3 INTEGR_CONST[green]
         BlockItem
           Decl
             VarDecl

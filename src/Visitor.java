@@ -289,7 +289,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
         String varName = ctx.IDENT().getText();
         Symbol symbol = globalScope.resolveGlobalFun(varName);// 直接从全局解析就好了
-        if(symbol==null) symbol = currentScope.resolve(varName);
+        if (symbol == null) symbol = currentScope.resolve(varName);
 
         // renameRecord记录
         if (!second && ctx.IDENT().getSymbol().getLine() == lineNo
@@ -692,21 +692,21 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
     public T visitReturnStmt(SysYParser.ReturnStmtContext ctx) {
 //        if (second) return super.visitReturnStmt(ctx);  // 跟 scope 相关，不能删除
 
-        if (ctx.exp() == null) {        // ！此部分并不导致多输出，也不导致分数降低
-//            if (!(currentRetType instanceof BasicType))
-//                report(7, ctx.RETURN().getSymbol().getLine());
-
-//            else {                    // ！此部分并不导致多输出，也不导致分数降低
-//                BasicType basicType = (BasicType) currentRetType;
-//                if (basicType.getSimpleType() != SimpleType.VOID)
-//                    report(7, ctx.RETURN().getSymbol().getLine());
-//            }
-
-        } else if (!second) {
-            Type type = (Type) this.visit(ctx.exp());
-            if (type != null)                                  //TODO 导致 hardtest3 有 extra output
-                if (!type.equals(currentRetType))
-                    report(7, ctx.RETURN().getSymbol().getLine());
+        int lineNum = ctx.RETURN().getSymbol().getLine();
+        if (currentScope instanceof FunctionSymbol) {
+            Type defineRetType = ((FunctionType) ((FunctionSymbol) currentScope).getType()).getRetType();
+            if (ctx.exp() == null) {        // 处理返回值为空值
+                if (defineRetType instanceof BasicType){
+                    BasicType retType = (BasicType) defineRetType;
+                    if(retType.getSimpleType()!=SimpleType.VOID)
+                        report(7, lineNum);
+                }
+            } else if (!second) {
+                Type type = (Type) this.visit(ctx.exp());
+                if (type != null)                                  //TODO 导致 hardtest3 有 extra output
+                    if (!type.equals(defineRetType))
+                        report(7, lineNum);
+            }
         }
         if (!second) return null;            //already 遍历
         return super.visitReturnStmt(ctx);
