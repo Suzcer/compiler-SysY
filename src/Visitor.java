@@ -17,8 +17,6 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
     private int localScopeCounter = 0;
 
-    private Type currentRetType;
-
     private boolean hasError = false;
 
     /**
@@ -162,7 +160,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
     @Override
     public T visitVarDecl(SysYParser.VarDeclContext ctx) {
-//        if (second) return super.visitVarDecl(ctx);               // TODO 如果不注释掉会出现问题，不太清楚是什么问题
+//        if (second) return super.visitVarDecl(ctx);
         String typeName = ctx.bType().getText();
         Type type = globalScope.resolveType(typeName);              // TODO 涉及到 globalScope，需要考虑是否能够解析出来
         List<SysYParser.VarDefContext> varDefContexts = ctx.varDef();
@@ -555,16 +553,13 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
                     currentScope.define(symbol);
             }
 
-            //5. 记录当前的函数，与返回值类型对比,注意应当在 retType之前记录curFun，否则returnStmt无法得知curFun
-            currentRetType = retType;
-
-            //6. modify next
+            //5. modify next
             next = true;
 
-            //7. 使用父类的遍历
+            //6. 使用父类的遍历
             super.visitFuncDef(ctx);
 
-            //4.重命名
+            //7.重命名
             if (funcFParamsCtx != null) {
                 List<SysYParser.FuncFParamContext> funcFParamCtx = funcFParamsCtx.funcFParam();
                 for (SysYParser.FuncFParamContext paramCtx : funcFParamCtx) {

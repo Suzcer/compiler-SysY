@@ -1,9 +1,6 @@
-int a() {
+int a(int q) {
     return 10;
 }
-void b(){
-
-}
 int main() {
-    return (1+3)*3;
+    int b=a(1);
 }
