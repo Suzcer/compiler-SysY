@@ -36,9 +36,9 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
     private boolean next = false;
 
     private void report(int errType, int lineNo) {
-//        hasError = true;
-//        if (!second)
-//            System.err.println("Error type " + errType + " at Line " + lineNo + ":");
+        hasError = true;
+        if (!second)
+            System.err.println("Error type " + errType + " at Line " + lineNo + ":");
     }
 
     public void setSecond(boolean second) {
@@ -252,7 +252,10 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
             renameRecord = currentScope.findScope(varName) + "." + baseTrans(ctx.IDENT().getSymbol().getText());
         }
         int cnt = ctx.L_BRACKT().size();
-        if (symbol == null) report(1, ctx.IDENT().getSymbol().getLine());
+        if (symbol == null) {
+            report(1, ctx.IDENT().getSymbol().getLine());
+            return (T) new BasicType(SimpleType.INT);    //防止多报
+        }
         else if ((symbol instanceof VariableSymbol || symbol instanceof FunctionSymbol) && cnt != 0)
             report(9, ctx.IDENT().getSymbol().getLine());
         super.visitLVal(ctx);
@@ -271,8 +274,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
                 return (T) ptr;
             }
         }
-        if (symbol != null) return (T) symbol.getType();
-        return null; //already 遍历
+        return (T) symbol.getType();    //不可能出现null
     }
 
     @Override
