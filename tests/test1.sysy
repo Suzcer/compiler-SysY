@@ -1,6 +1,34 @@
-int a(int q) {
-    return 10;
+int b(int q) {
+    int y=5;
+    return 1;
 }
-int main() {
-    int b=a(1);
+
+int a;
+int main(int a) {
+    int b[3];
+    {
+        int a;
+        int b=a;
+        if(3>1){
+            int a;
+        }else{
+            int a=3;
+            int b=a;
+        }
+        a=6;
+    }
+    while(3+b[1]>1){
+        int a[3]=b;
+        if((a[2]>b[3])+(3-a[9])){
+            continue;
+        }
+        if(a+9-3-243){
+            break;
+        }else{
+            int a=b[2];
+        }
+    }
+    b[b[(a+!b[0])]]=a+b[4];
+
+    return 0;
 }

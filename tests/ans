@@ -3,14 +3,37 @@ Program
     FuncDef
       FuncType
         int INT[orange]
-      a IDENT[red]
+      b IDENT[red]
+      FuncFParams
+        FuncFParam
+          BType
+            int INT[orange]
+          q IDENT[red]
       Block
+        BlockItem
+          Decl
+            VarDecl
+              BType
+                int INT[orange]
+              VarDef
+                y IDENT[red]
+                = ASSIGN[blue]
+                InitVal
+                  Exp
+                    Number
+                      5 INTEGR_CONST[green]
         BlockItem
           Stmt
             return RETURN[orange]
             Exp
               Number
-                10 INTEGR_CONST[green]
+                1 INTEGR_CONST[green]
+    Decl
+      VarDecl
+        BType
+          int INT[orange]
+        VarDef
+          a IDENT[red]
     FuncDef
       FuncType
         int INT[orange]
@@ -22,12 +45,59 @@ Program
               BType
                 int INT[orange]
               VarDef
-                d IDENT[red]
-                = ASSIGN[blue]
-                InitVal
+                a IDENT[red]
+        BlockItem
+          Stmt
+            Block
+              BlockItem
+                Decl
+                  VarDecl
+                    BType
+                      int INT[orange]
+                    VarDef
+                      xxx IDENT[red]
+              BlockItem
+                Decl
+                  VarDecl
+                    BType
+                      int INT[orange]
+                    VarDef
+                      b IDENT[red]
+                      = ASSIGN[blue]
+                      InitVal
+                        Exp
+                          LVal
+                            xxx IDENT[red]
+              BlockItem
+                Stmt
+                  if IF[orange]
+                  Cond
+                    Cond
+                      Exp
+                        Number
+                          3 INTEGR_CONST[green]
+                    > GT[blue]
+                    Cond
+                      Exp
+                        Number
+                          1 INTEGR_CONST[green]
+                  Stmt
+                    Block
+                      BlockItem
+                        Decl
+                          VarDecl
+                            BType
+                              int INT[orange]
+                            VarDef
+                              a IDENT[red]
+              BlockItem
+                Stmt
+                  LVal
+                    xxx IDENT[red]
+                  = ASSIGN[blue]
                   Exp
                     Number
-                      3 INTEGR_CONST[green]
+                      6 INTEGR_CONST[green]
         BlockItem
           Decl
             VarDecl
@@ -38,19 +108,12 @@ Program
                 = ASSIGN[blue]
                 InitVal
                   Exp
-                    Number
-                      4 INTEGR_CONST[green]
-        BlockItem
-          Stmt
-            LVal
-              d IDENT[red]
-            = ASSIGN[blue]
-            Exp
-              Number
-                5 INTEGR_CONST[green]
+                    LVal
+                      a IDENT[red]
         BlockItem
           Stmt
             return RETURN[orange]
             Exp
-              LVal
-                d IDENT[red]
+              Number
+                0 INTEGR_CONST[green]
+

@@ -1,17 +1,39 @@
-/usr/lib/jvm/java-1.11.0-openjdk-amd64/bin/java -javaagent:/opt/idea/idea-IU-222.4345.14/lib/idea_rt.jar=43359:/opt/idea/idea-IU-222.4345.14/bin -Dfile.encoding=UTF-8 -classpath /usr/local/lib/Lab/out/production/Lab:/usr/local/lib/antlr-4.9.1-complete.jar Main /usr/local/lib/Lab/tests/test1.sysy 8 4 d
 Program
   CompUnit
     FuncDef
       FuncType
         int INT[orange]
-      a IDENT[red]
+      b IDENT[red]
+      FuncFParams
+        FuncFParam
+          BType
+            int INT[orange]
+          q IDENT[red]
       Block
+        BlockItem
+          Decl
+            VarDecl
+              BType
+                int INT[orange]
+              VarDef
+                y IDENT[red]
+                = ASSIGN[blue]
+                InitVal
+                  Exp
+                    Number
+                      5 INTEGR_CONST[green]
         BlockItem
           Stmt
             return RETURN[orange]
             Exp
               Number
-                10 INTEGR_CONST[green]
+                1 INTEGR_CONST[green]
+    Decl
+      VarDecl
+        BType
+          int INT[orange]
+        VarDef
+          a IDENT[red]
     FuncDef
       FuncType
         int INT[orange]
@@ -19,18 +41,63 @@ Program
       Block
         BlockItem
           Decl
-            ConstDecl
-              const CONST[orange]
+            VarDecl
               BType
                 int INT[orange]
-              ConstDef
-                d IDENT[red]
-                = ASSIGN[blue]
-                ConstInitVal
-                  ConstExp
-                    Exp
-                      Number
-                        3 INTEGR_CONST[green]
+              VarDef
+                a IDENT[red]
+        BlockItem
+          Stmt
+            Block
+              BlockItem
+                Decl
+                  VarDecl
+                    BType
+                      int INT[orange]
+                    VarDef
+                      xxx IDENT[red]
+              BlockItem
+                Decl
+                  VarDecl
+                    BType
+                      int INT[orange]
+                    VarDef
+                      b IDENT[red]
+                      = ASSIGN[blue]
+                      InitVal
+                        Exp
+                          LVal
+                            xxx IDENT[red]
+              BlockItem
+                Stmt
+                  if IF[orange]
+                  Cond
+                    Cond
+                      Exp
+                        Number
+                          3 INTEGR_CONST[green]
+                    > GT[blue]
+                    Cond
+                      Exp
+                        Number
+                          1 INTEGR_CONST[green]
+                  Stmt
+                    Block
+                      BlockItem
+                        Decl
+                          VarDecl
+                            BType
+                              int INT[orange]
+                            VarDef
+                              a IDENT[red]
+              BlockItem
+                Stmt
+                  LVal
+                    xxx IDENT[red]
+                  = ASSIGN[blue]
+                  Exp
+                    Number
+                      6 INTEGR_CONST[green]
         BlockItem
           Decl
             VarDecl
@@ -41,21 +108,13 @@ Program
                 = ASSIGN[blue]
                 InitVal
                   Exp
-                    Number
-                      4 INTEGR_CONST[green]
-        BlockItem
-          Stmt
-            LVal
-              d IDENT[red]
-            = ASSIGN[blue]
-            Exp
-              Number
-                5 INTEGR_CONST[green]
+                    LVal
+                      a IDENT[red]
         BlockItem
           Stmt
             return RETURN[orange]
             Exp
-              LVal
-                d IDENT[red]
+              Number
+                0 INTEGR_CONST[green]
 
 Process finished with exit code 0
