@@ -285,7 +285,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
     @Override
     public T visitCallFuncExp(SysYParser.CallFuncExpContext ctx) {
-//        if (second) return super.visitCallFuncExp(ctx);
+        if (second) return super.visitCallFuncExp(ctx);
 
         String varName = ctx.IDENT().getText();
         Symbol symbol = globalScope.resolveGlobalFun(varName);// 直接从全局解析就好了
@@ -329,7 +329,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
             return (T) functionType.getRetType();
         }
 
-        return super.visitCallFuncExp(ctx);        //TODO , 可能需要修改，保证不会重复输出错误
+        return super.visitCallFuncExp(ctx);
     }
 
     @Override
