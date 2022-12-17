@@ -254,7 +254,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         int cnt = ctx.L_BRACKT().size();
         if (symbol == null) {
             report(1, ctx.IDENT().getSymbol().getLine());
-            if(!second) return (T)new ErrorType();    //防止多报
+            if(!second) return (T) new BasicType(SimpleType.INT);    //防止多报. 不能改为 ErrorType
         }
         else if ((symbol instanceof VariableSymbol || symbol instanceof FunctionSymbol) && cnt != 0)
             report(9, ctx.IDENT().getSymbol().getLine());
