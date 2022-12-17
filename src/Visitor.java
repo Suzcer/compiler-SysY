@@ -36,9 +36,9 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
     private boolean next = false;
 
     private void report(int errType, int lineNo) {
-//        hasError = true;
-//        if (!second)
-//            System.err.println("Error type " + errType + " at Line " + lineNo + ":");
+        hasError = true;
+        if (!second)
+            System.err.println("Error type " + errType + " at Line " + lineNo + ":");
     }
 
     public void setSecond(boolean second) {
@@ -274,7 +274,8 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
                 return (T) ptr;
             }
         }
-        return (T) symbol.getType();    //不可能出现null
+        if(symbol != null) return (T) symbol.getType();
+        return null;
     }
 
     @Override
@@ -359,7 +360,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
             }
         }else if(!(lType instanceof ErrorType)&&!(rType instanceof ErrorType)){
             report(6, lineNum);
-            return (T) new BasicType(SimpleType.INT);
+            return (T) new ErrorType();
         }
         return (T) lType;
     }
@@ -381,7 +382,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
             }
         }else if(!(lType instanceof ErrorType)&&!(rType instanceof ErrorType)){
             report(6, lineNum);
-            return (T) new BasicType(SimpleType.INT);
+            return (T) new ErrorType();
         }
         return (T) lType;
     }
@@ -402,7 +403,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
             }
         }else if(!(lType instanceof ErrorType)&&!(rType instanceof ErrorType)){
             report(6, lineNum);
-            return (T) new BasicType(SimpleType.INT);
+            return (T) new ErrorType();
         }
         return (T) lType;
     }
@@ -423,7 +424,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
             }
         }else if(!(lType instanceof ErrorType)&&!(rType instanceof ErrorType)){
             report(6, lineNum);
-            return (T) new BasicType(SimpleType.INT);
+            return (T) new ErrorType();
         }
         return (T) lType;
     }
@@ -451,7 +452,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
             }
         }else if(!(type instanceof ErrorType)){
             report(6, lineNum);
-            return (T) new BasicType(SimpleType.INT);
+            return (T) new ErrorType();
         }
         return (T) type;       // return type!
     }
@@ -477,7 +478,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
             }
         }else if(!(lType instanceof ErrorType)&&!(rType instanceof ErrorType)){
             report(6, lineNum);
-            return (T) new BasicType(SimpleType.INT);
+            return (T) new ErrorType();
         }
         return (T) lType;
     }
@@ -500,7 +501,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
             }
         }else if(!(lType instanceof ErrorType)&&!(rType instanceof ErrorType)){
             report(6, lineNum);
-            return (T) new BasicType(SimpleType.INT);
+            return (T) new ErrorType();
         }
         return (T) lType;   //normal
     }

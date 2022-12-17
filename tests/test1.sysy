@@ -1,7 +1,4 @@
-int f(){
-    return 1;
-}
-
-int a(){
-    f();
+int test(){}
+int main(){
+    int a = 1 + test + test;
 }
