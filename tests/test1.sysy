@@ -1,4 +1,3 @@
-int test(){}
 int main(){
-    int a = 1 + test + test;
+    return a()+a();
 }

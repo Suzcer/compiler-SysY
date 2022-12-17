@@ -300,7 +300,6 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         if (symbol == null) report(2, ctx.IDENT().getSymbol().getLine());
         else if (!(symbol instanceof FunctionSymbol)) { //检查是否为变量的symbol而不是函数的symbol
             report(10, ctx.IDENT().getSymbol().getLine());
-            return null;                //second 不会触及此行
         } else {          // 检查参数传递是否正确
             FunctionType functionType = (FunctionType) symbol.getType();
             ArrayList<Type> paramsType = functionType.getParamsType();  //定义的时候
@@ -330,7 +329,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
             return (T) functionType.getRetType();
         }
 
-        return super.visitCallFuncExp(ctx);
+        return (T) new ErrorType();
     }
 
     @Override
@@ -705,7 +704,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 //                }
             } else if (!second) {
                 Type type = (Type) this.visit(ctx.exp());
-                if (type != null)                                  //TODO 导致 hardtest3 有 extra output
+                if (!(type instanceof ErrorType))            //TODO 导致 hardtest3 有 extra output
                     if (!type.equals(defineRetType))
                         report(7, lineNum);
             }
