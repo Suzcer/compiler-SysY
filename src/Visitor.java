@@ -254,10 +254,11 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         int cnt = ctx.L_BRACKT().size();
         if (symbol == null) {
             report(1, ctx.IDENT().getSymbol().getLine());
-            if(!second) return (T) new BasicType(SimpleType.INT);    //防止多报
-        }
-        else if ((symbol instanceof VariableSymbol || symbol instanceof FunctionSymbol) && cnt != 0)
+            if(!second) return (T) new ErrorType();    //防止多报
+        }else if ((symbol instanceof VariableSymbol || symbol instanceof FunctionSymbol) && cnt != 0) {
             report(9, ctx.IDENT().getSymbol().getLine());
+            if(!second) return (T) new ErrorType();
+        }
         super.visitLVal(ctx);
 
         if (symbol instanceof ArraySymbol) {
@@ -268,6 +269,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
                         ptr = ((ArrayType) ptr).getSubType();
                     else if (ptr instanceof BasicType) {    //此时没有subType，ptr不能是BasicType
                         report(9, ctx.IDENT().getSymbol().getLine());
+                        if(!second) return (T) new ErrorType();
                         break;
                     }
                 }
@@ -329,7 +331,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
             return (T) functionType.getRetType();
         }
 
-        return (T) new ErrorType();
+        return (T) new ErrorType();         // 合并了最上面的两个错误
     }
 
     @Override
