@@ -36,9 +36,9 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
     private boolean next = false;
 
     private void report(int errType, int lineNo) {
-        hasError = true;
-        if (!second)
-            System.err.println("Error type " + errType + " at Line " + lineNo + ":");
+//        hasError = true;
+//        if (!second)
+//            System.err.println("Error type " + errType + " at Line " + lineNo + ":");
     }
 
     public void setSecond(boolean second) {
@@ -170,7 +170,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
             SysYParser.InitValContext initVal = varDefCtx.initVal();
             if (initVal!=null && initVal.exp() != null) {
                 Type initType = (Type) this.visit(initVal);
-                if(!initType.equals(type))
+                if(!type.equals(initType))
                     report(5,lineNum);
             }
             String varName = varDefCtx.IDENT().getText();
