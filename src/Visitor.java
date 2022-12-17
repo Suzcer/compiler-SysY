@@ -254,11 +254,10 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         int cnt = ctx.L_BRACKT().size();
         if (symbol == null) {
             report(1, ctx.IDENT().getSymbol().getLine());
-            if(!second) return (T) new ErrorType();    //防止多报
-        }else if ((symbol instanceof VariableSymbol || symbol instanceof FunctionSymbol) && cnt != 0) {
-            report(9, ctx.IDENT().getSymbol().getLine());
-            if(!second) return (T) new ErrorType();
+            if(!second) return (T)new ErrorType();    //防止多报
         }
+        else if ((symbol instanceof VariableSymbol || symbol instanceof FunctionSymbol) && cnt != 0)
+            report(9, ctx.IDENT().getSymbol().getLine());
         super.visitLVal(ctx);
 
         if (symbol instanceof ArraySymbol) {
@@ -269,7 +268,6 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
                         ptr = ((ArrayType) ptr).getSubType();
                     else if (ptr instanceof BasicType) {    //此时没有subType，ptr不能是BasicType
                         report(9, ctx.IDENT().getSymbol().getLine());
-                        if(!second) return (T) new ErrorType();
                         break;
                     }
                 }
@@ -302,6 +300,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         if (symbol == null) report(2, ctx.IDENT().getSymbol().getLine());
         else if (!(symbol instanceof FunctionSymbol)) { //检查是否为变量的symbol而不是函数的symbol
             report(10, ctx.IDENT().getSymbol().getLine());
+            return null;                //second 不会触及此行
         } else {          // 检查参数传递是否正确
             FunctionType functionType = (FunctionType) symbol.getType();
             ArrayList<Type> paramsType = functionType.getParamsType();  //定义的时候
@@ -331,7 +330,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
             return (T) functionType.getRetType();
         }
 
-        return (T) new ErrorType();         // 合并了最上面的两个错误
+        return super.visitCallFuncExp(ctx);
     }
 
     @Override
@@ -699,14 +698,14 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         if (currentScope instanceof FunctionSymbol) {
             Type defineRetType = ((FunctionType) ((FunctionSymbol) currentScope).getType()).getRetType();
             if (ctx.exp() == null) {        // 处理返回值为空值
-//                if (defineRetType instanceof BasicType){
-//                    BasicType retType = (BasicType) defineRetType;
-//                    if(retType.getSimpleType()!=SimpleType.VOID)
-//                        report(7, lineNum);
-//                }
+                if (defineRetType instanceof BasicType){
+                    BasicType retType = (BasicType) defineRetType;
+                    if(retType.getSimpleType()!=SimpleType.VOID)
+                        report(7, lineNum);
+                }
             } else if (!second) {
                 Type type = (Type) this.visit(ctx.exp());
-                if (!(type instanceof ErrorType))            //TODO 导致 hardtest3 有 extra output
+                if (type != null)                                  //TODO 导致 hardtest3 有 extra output
                     if (!type.equals(defineRetType))
                         report(7, lineNum);
             }
