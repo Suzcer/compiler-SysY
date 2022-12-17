@@ -165,9 +165,17 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         Type type = globalScope.resolveType(typeName);              // TODO 涉及到 globalScope，需要考虑是否能够解析出来
         List<SysYParser.VarDefContext> varDefContexts = ctx.varDef();
         for (SysYParser.VarDefContext varDefCtx : varDefContexts) {
+            // if there's initVal, then check the type
+            int lineNum = varDefCtx.IDENT().getSymbol().getLine();
+            SysYParser.InitValContext initVal = varDefCtx.initVal();
+            if (initVal!=null && initVal.exp() != null) {
+                Type initType = (Type) this.visit(initVal);
+                if(!initType.equals(type))
+                    report(5,lineNum);
+            }
             String varName = varDefCtx.IDENT().getText();
             Symbol tmp = currentScope.getSymbols().get(varName);    // 如果和当前作用域的重名了，才需要进行错误报告
-            if (tmp != null) report(3, varDefCtx.IDENT().getSymbol().getLine());
+            if (tmp != null) report(3, lineNum);
             else {
                 int dimensions = varDefCtx.L_BRACKT().size();       // int a[1][2];
                 if (dimensions == 0) {   //VariableSymbol
@@ -191,6 +199,13 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
             }
         }
         return super.visitVarDecl(ctx);
+    }
+
+    @Override
+    public T visitInitVal(SysYParser.InitValContext ctx) {
+        if (second) return super.visitInitVal(ctx);
+        if (ctx.exp() == null) return super.visitInitVal(ctx);
+        return this.visit(ctx.exp());
     }
 
     @Override
@@ -254,9 +269,8 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         int cnt = ctx.L_BRACKT().size();
         if (symbol == null) {
             report(1, ctx.IDENT().getSymbol().getLine());
-            if(!second) return (T) new BasicType(SimpleType.INT);    //防止多报. 不能改为 ErrorType
-        }
-        else if ((symbol instanceof VariableSymbol || symbol instanceof FunctionSymbol) && cnt != 0)
+            if (!second) return (T) new BasicType(SimpleType.INT);    //防止多报. 不能改为 ErrorType
+        } else if ((symbol instanceof VariableSymbol || symbol instanceof FunctionSymbol) && cnt != 0)
             report(9, ctx.IDENT().getSymbol().getLine());
         super.visitLVal(ctx);
 
@@ -274,7 +288,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
                 return (T) ptr;
             }
         }
-        if(symbol != null) return (T) symbol.getType();
+        if (symbol != null) return (T) symbol.getType();
         return null;
     }
 
@@ -300,7 +314,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         if (symbol == null) report(2, ctx.IDENT().getSymbol().getLine());
         else if (!(symbol instanceof FunctionSymbol)) { //检查是否为变量的symbol而不是函数的symbol
             report(10, ctx.IDENT().getSymbol().getLine());
-            return null;                //second 不会触及此行
+            return (T) new ErrorType();                //second 不会触及此行
         } else {          // 检查参数传递是否正确
             FunctionType functionType = (FunctionType) symbol.getType();
             ArrayList<Type> paramsType = functionType.getParamsType();  //定义的时候
@@ -358,7 +372,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
                 report(6, lineNum);
                 return (T) new ErrorType();
             }
-        }else if(!(lType instanceof ErrorType)&&!(rType instanceof ErrorType)){
+        } else if (!(lType instanceof ErrorType) && !(rType instanceof ErrorType)) {
             report(6, lineNum);
             return (T) new ErrorType();
         }
@@ -380,7 +394,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
                 report(6, lineNum);
                 return (T) new ErrorType();
             }
-        }else if(!(lType instanceof ErrorType)&&!(rType instanceof ErrorType)){
+        } else if (!(lType instanceof ErrorType) && !(rType instanceof ErrorType)) {
             report(6, lineNum);
             return (T) new ErrorType();
         }
@@ -401,7 +415,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
                 report(6, lineNum);
                 return (T) new ErrorType();
             }
-        }else if(!(lType instanceof ErrorType)&&!(rType instanceof ErrorType)){
+        } else if (!(lType instanceof ErrorType) && !(rType instanceof ErrorType)) {
             report(6, lineNum);
             return (T) new ErrorType();
         }
@@ -422,7 +436,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
                 report(6, lineNum);
                 return (T) new ErrorType();
             }
-        }else if(!(lType instanceof ErrorType)&&!(rType instanceof ErrorType)){
+        } else if (!(lType instanceof ErrorType) && !(rType instanceof ErrorType)) {
             report(6, lineNum);
             return (T) new ErrorType();
         }
@@ -448,9 +462,9 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
             BasicType basicType = (BasicType) type;
             if (basicType.getSimpleType() != SimpleType.INT) {
                 report(6, lineNum);
-                return (T)new ErrorType();
+                return (T) new ErrorType();
             }
-        }else if(!(type instanceof ErrorType)){
+        } else if (!(type instanceof ErrorType)) {
             report(6, lineNum);
             return (T) new ErrorType();
         }
@@ -476,7 +490,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
                 report(6, lineNum);
                 return (T) new ErrorType();
             }
-        }else if(!(lType instanceof ErrorType)&&!(rType instanceof ErrorType)){
+        } else if (!(lType instanceof ErrorType) && !(rType instanceof ErrorType)) {
             report(6, lineNum);
             return (T) new ErrorType();
         }
@@ -499,7 +513,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
                 report(6, lineNum);
                 return (T) new ErrorType();
             }
-        }else if(!(lType instanceof ErrorType)&&!(rType instanceof ErrorType)){
+        } else if (!(lType instanceof ErrorType) && !(rType instanceof ErrorType)) {
             report(6, lineNum);
             return (T) new ErrorType();
         }
@@ -698,9 +712,9 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         if (currentScope instanceof FunctionSymbol) {
             Type defineRetType = ((FunctionType) ((FunctionSymbol) currentScope).getType()).getRetType();
             if (ctx.exp() == null) {        // 处理返回值为空值
-                if (defineRetType instanceof BasicType){
+                if (defineRetType instanceof BasicType) {
                     BasicType retType = (BasicType) defineRetType;
-                    if(retType.getSimpleType()!=SimpleType.VOID)
+                    if (retType.getSimpleType() != SimpleType.VOID)
                         report(7, lineNum);
                 }
             } else if (!second) {

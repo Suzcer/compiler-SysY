@@ -1,4 +1,23 @@
 int a;
+
+void foo(int a){
+    int a;
+    foo=foo;
+}
+
+int a(){
+    return;
+}
+
+int go(int a){
+    return a;
+}
+
 int main(){
-    return a()+a();
+    int a;
+    a(a);
+    {
+        int a;
+        a=a(a);
+    }
 }
