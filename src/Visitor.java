@@ -36,9 +36,9 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
     private boolean next = false;
 
     private void report(int errType, int lineNo) {
-//        hasError = true;
-//        if (!second)
-//            System.err.println("Error type " + errType + " at Line " + lineNo + ":");
+        hasError = true;
+        if (!second)
+            System.err.println("Error type " + errType + " at Line " + lineNo + ":");
     }
 
     public void setSecond(boolean second) {
@@ -201,12 +201,12 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         return super.visitVarDecl(ctx);
     }
 
-    @Override
-    public T visitInitVal(SysYParser.InitValContext ctx) {
-        if (second) return super.visitInitVal(ctx);
-        if (ctx.exp() == null) return super.visitInitVal(ctx);
-        return this.visit(ctx.exp());
-    }
+//    @Override
+//    public T visitInitVal(SysYParser.InitValContext ctx) {
+//        if (second) return super.visitInitVal(ctx);
+//        if (ctx.exp() == null) return super.visitInitVal(ctx);
+//        return this.visit(ctx.exp());
+//    }
 
     @Override
     public T visitConstDecl(SysYParser.ConstDeclContext ctx) {
