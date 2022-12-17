@@ -698,11 +698,11 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         if (currentScope instanceof FunctionSymbol) {
             Type defineRetType = ((FunctionType) ((FunctionSymbol) currentScope).getType()).getRetType();
             if (ctx.exp() == null) {        // 处理返回值为空值
-                if (defineRetType instanceof BasicType){
-                    BasicType retType = (BasicType) defineRetType;
-                    if(retType.getSimpleType()!=SimpleType.VOID)
-                        report(7, lineNum);
-                }
+//                if (defineRetType instanceof BasicType){
+//                    BasicType retType = (BasicType) defineRetType;
+//                    if(retType.getSimpleType()!=SimpleType.VOID)
+//                        report(7, lineNum);
+//                }
             } else if (!second) {
                 Type type = (Type) this.visit(ctx.exp());
                 if (type != null)                                  //TODO 导致 hardtest3 有 extra output
