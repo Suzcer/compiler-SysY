@@ -21,7 +21,7 @@ public class BaseSymbol implements Symbol {
     }
 
     public String toString() {
-        return "";
+        return name;
     }
 
     @Override
