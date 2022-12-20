@@ -168,8 +168,10 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         for (SysYParser.VarDefContext varDefCtx : varDefContexts) {
             String varName = varDefCtx.IDENT().getText();
             Symbol tmp = currentScope.getSymbols().get(varName);    // 如果和当前作用域的重名了，才需要进行错误报告
-            if (tmp != null) report(3, varDefCtx.IDENT().getSymbol().getLine());
-            else {
+            if (tmp != null) {
+                report(3, varDefCtx.IDENT().getSymbol().getLine());
+                return null;
+            } else {
                 int dimensions = varDefCtx.L_BRACKT().size();       // int a[1][2];
                 if (dimensions == 0) {   //VariableSymbol
                     VariableSymbol symbol = new VariableSymbol(varName, type);
@@ -184,6 +186,10 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
                     currentScope.define(symbol);
                 }
                 // 保证初始化是正确的，因此这里不予处理
+                if (!second && varDefCtx.initVal() != null) {
+                    Type initType = (Type)this.visit(varDefCtx.initVal());
+                    if(!type.equals(initType) && ! (initType instanceof ErrorType)) report(5,varDefCtx.IDENT().getSymbol().getLine());
+                }
             }
             // renameRecord记录
             if (!second && varDefCtx.IDENT().getSymbol().getLine() == lineNo
@@ -191,7 +197,15 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
                 renameRecord = currentScope.findScope(varName) + "." + baseTrans(varDefCtx.IDENT().getSymbol().getText());
             }
         }
-        return super.visitVarDecl(ctx);
+        if(second) return super.visitVarDecl(ctx);
+        return null;
+    }
+
+    @Override
+    public T visitInitVal(SysYParser.InitValContext ctx) {
+        if (second) return super.visitInitVal(ctx);
+        if (!ctx.exp().isEmpty()) return this.visit(ctx.exp());
+        return super.visitInitVal(ctx);
     }
 
     @Override
@@ -319,13 +333,17 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
                                 isQualified = false;
                         }
                     }
-                    if (!isQualified)
+                    if (!isQualified){
                         report(8, ctx.IDENT().getSymbol().getLine());
+                        return (T)new ErrorType();
+                    }
                 } else if (!paramsType.isEmpty()) {             // 参数列表不为空但实际没给参数
                     report(8, ctx.IDENT().getSymbol().getLine());
+                    return (T)new ErrorType();
                 }
             } else if (!paramsType.isEmpty()) {     // 参数列表不为空但实际没给参数
                 report(8, ctx.IDENT().getSymbol().getLine());
+                return (T)new ErrorType();
             }
             return (T) functionType.getRetType();
         }
@@ -516,12 +534,12 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         SysYParser.FuncFParamsContext funcFParamsCtx = ctx.funcFParams();
 
         ArrayList<Type> paramsType = new ArrayList<>();
-        HashSet<String> names=new HashSet<>();              //花名册
+        HashSet<String> names = new HashSet<>();              //花名册
         ArrayList<Symbol> defineList = new ArrayList<>();
         if (funcFParamsCtx != null) {       // 如果有参数
             List<SysYParser.FuncFParamContext> funcFParamCtxs = funcFParamsCtx.funcFParam();
             for (SysYParser.FuncFParamContext funcFParamCtx : funcFParamCtxs) {
-                if(!names.contains(funcFParamCtx.IDENT().getText())) names.add(funcFParamCtx.IDENT().getText());
+                if (!names.contains(funcFParamCtx.IDENT().getText())) names.add(funcFParamCtx.IDENT().getText());
                 else continue;          // skip
 
                 String paramTypeName = funcFParamCtx.bType().getText();
@@ -561,7 +579,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
             //4. 进入函数作用域后，对其形参进行define
             if (!defineList.isEmpty()) {
                 for (Symbol symbol : defineList) {
-                        currentScope.define(symbol);
+                    currentScope.define(symbol);
                 }
             }
 
