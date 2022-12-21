@@ -171,7 +171,8 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
             if (tmp != null) {
                 report(3, varDefCtx.IDENT().getSymbol().getLine());
                 return null;
-            } else {
+            }
+            else {
                 int dimensions = varDefCtx.L_BRACKT().size();       // int a[1][2];
                 if (dimensions == 0) {   //VariableSymbol
                     VariableSymbol symbol = new VariableSymbol(varName, type);
@@ -186,10 +187,6 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
                     currentScope.define(symbol);
                 }
                 // 保证初始化是正确的，因此这里不予处理
-                if (!second && varDefCtx.initVal() != null) {
-                    Type initType = (Type)this.visit(varDefCtx.initVal());
-                    if(!type.equals(initType) && ! (initType instanceof ErrorType)) report(5,varDefCtx.IDENT().getSymbol().getLine());
-                }
             }
             // renameRecord记录
             if (!second && varDefCtx.IDENT().getSymbol().getLine() == lineNo
@@ -197,15 +194,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
                 renameRecord = currentScope.findScope(varName) + "." + baseTrans(varDefCtx.IDENT().getSymbol().getText());
             }
         }
-        if(second) return super.visitVarDecl(ctx);
-        return null;
-    }
-
-    @Override
-    public T visitInitVal(SysYParser.InitValContext ctx) {
-        if (second) return super.visitInitVal(ctx);
-        if (ctx.exp() != null) return this.visit(ctx.exp());
-        return super.visitInitVal(ctx);
+        return super.visitVarDecl(ctx);
     }
 
     @Override
@@ -311,10 +300,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
                 && ctx.IDENT().getSymbol().getCharPositionInLine() == column)
             renameRecord = currentScope.findScope(ctx.IDENT().getText()) + "." + baseTrans(ctx.IDENT().getSymbol().getText());
 
-        if (symbol == null) {
-            report(2, ctx.IDENT().getSymbol().getLine());
-            return (T) new ErrorType();
-        }
+        if (symbol == null) report(2, ctx.IDENT().getSymbol().getLine());
         else if (!(symbol instanceof FunctionSymbol)) { //检查是否为变量的symbol而不是函数的symbol
             report(10, ctx.IDENT().getSymbol().getLine());
             return (T) new ErrorType();                //second 不会触及此行
@@ -336,21 +322,18 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
                                 isQualified = false;
                         }
                     }
-                    if (!isQualified){
+                    if (!isQualified)
                         report(8, ctx.IDENT().getSymbol().getLine());
-                        return (T)new ErrorType();
-                    }
                 } else if (!paramsType.isEmpty()) {             // 参数列表不为空但实际没给参数
                     report(8, ctx.IDENT().getSymbol().getLine());
-                    return (T)new ErrorType();
                 }
             } else if (!paramsType.isEmpty()) {     // 参数列表不为空但实际没给参数
                 report(8, ctx.IDENT().getSymbol().getLine());
-                return (T)new ErrorType();
             }
             return (T) functionType.getRetType();
         }
-        // unreachable
+
+        return super.visitCallFuncExp(ctx);
     }
 
     @Override
@@ -536,12 +519,12 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         SysYParser.FuncFParamsContext funcFParamsCtx = ctx.funcFParams();
 
         ArrayList<Type> paramsType = new ArrayList<>();
-        HashSet<String> names = new HashSet<>();              //花名册
+        HashSet<String> names=new HashSet<>();              //花名册
         ArrayList<Symbol> defineList = new ArrayList<>();
         if (funcFParamsCtx != null) {       // 如果有参数
             List<SysYParser.FuncFParamContext> funcFParamCtxs = funcFParamsCtx.funcFParam();
             for (SysYParser.FuncFParamContext funcFParamCtx : funcFParamCtxs) {
-                if (!names.contains(funcFParamCtx.IDENT().getText())) names.add(funcFParamCtx.IDENT().getText());
+                if(!names.contains(funcFParamCtx.IDENT().getText())) names.add(funcFParamCtx.IDENT().getText());
                 else continue;          // skip
 
                 String paramTypeName = funcFParamCtx.bType().getText();
