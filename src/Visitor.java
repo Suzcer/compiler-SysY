@@ -169,8 +169,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         for (SysYParser.VarDefContext varDefCtx : varDefContexts) {
             String varName = varDefCtx.IDENT().getText();
             Symbol tmp = currentScope.getSymbols().get(varName);    // 如果和当前作用域的重名了，才需要进行错误报告
-            if (tmp != null)
-                report(3, varDefCtx.IDENT().getSymbol().getLine());//todo 按道理来说这里之后的错误应该被忽略的，所以应当返回，但是实际上好像并不应该
+            if (tmp != null) report(3, varDefCtx.IDENT().getSymbol().getLine());//todo 按道理来说这里之后的错误应该被忽略的，所以应当返回，但是实际上好像并不应该
             else {
                 int dimensions = varDefCtx.L_BRACKT().size();       // int a[1][2];
                 if (dimensions == 0) {   //VariableSymbol
@@ -186,11 +185,11 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
                     currentScope.define(symbol);
                 }
                 // 保证初始化是正确的，因此这里不予处理
-                if (!second && varDefCtx.initVal() != null) {
-                    Type initType = (Type) this.visit(varDefCtx.initVal());          //TODO 通过引入hasOutput的map来解决
-                    if (!type.equals(initType) && !(initType instanceof ErrorType))
-                        report(5, varDefCtx.IDENT().getSymbol().getLine());
-                }
+//                if (!second && varDefCtx.initVal() != null) {
+//                    Type initType = (Type) this.visit(varDefCtx.initVal());          //TODO 通过引入hasOutput的map来解决
+//                    if (!type.equals(initType) && !(initType instanceof ErrorType))
+//                        report(5, varDefCtx.IDENT().getSymbol().getLine());
+//                }
             }
             // renameRecord记录
             if (!second && varDefCtx.IDENT().getSymbol().getLine() == lineNo
@@ -306,7 +305,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
         if (symbol == null) {
             report(2, ctx.IDENT().getSymbol().getLine());
-//            return (T) new ErrorType();
+            return (T) new ErrorType();
         } else if (!(symbol instanceof FunctionSymbol)) { //检查是否为变量的symbol而不是函数的symbol
             report(10, ctx.IDENT().getSymbol().getLine());
             return (T) new ErrorType();                //second 不会触及此行
@@ -339,7 +338,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
             return (T) functionType.getRetType();
         }
 
-        return super.visitCallFuncExp(ctx);           // unreachable
+//        return super.visitCallFuncExp(ctx);           // unreachable
     }
 
     @Override
