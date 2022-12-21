@@ -204,7 +204,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
     @Override
     public T visitInitVal(SysYParser.InitValContext ctx) {
         if (second) return super.visitInitVal(ctx);
-        if (!ctx.exp().isEmpty()) return this.visit(ctx.exp());
+        if (ctx.exp() != null) return this.visit(ctx.exp());
         return super.visitInitVal(ctx);
     }
 
@@ -311,7 +311,10 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
                 && ctx.IDENT().getSymbol().getCharPositionInLine() == column)
             renameRecord = currentScope.findScope(ctx.IDENT().getText()) + "." + baseTrans(ctx.IDENT().getSymbol().getText());
 
-        if (symbol == null) report(2, ctx.IDENT().getSymbol().getLine());
+        if (symbol == null) {
+            report(2, ctx.IDENT().getSymbol().getLine());
+            return (T) new ErrorType();
+        }
         else if (!(symbol instanceof FunctionSymbol)) { //检查是否为变量的symbol而不是函数的symbol
             report(10, ctx.IDENT().getSymbol().getLine());
             return (T) new ErrorType();                //second 不会触及此行
@@ -347,8 +350,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
             }
             return (T) functionType.getRetType();
         }
-
-        return super.visitCallFuncExp(ctx);
+        // unreachable
     }
 
     @Override
