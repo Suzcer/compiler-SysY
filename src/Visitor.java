@@ -168,10 +168,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         for (SysYParser.VarDefContext varDefCtx : varDefContexts) {
             String varName = varDefCtx.IDENT().getText();
             Symbol tmp = currentScope.getSymbols().get(varName);    // 如果和当前作用域的重名了，才需要进行错误报告
-            if (tmp != null) {
-                report(3, varDefCtx.IDENT().getSymbol().getLine());
-                return super.visitVarDecl(ctx);
-            }
+            if (tmp != null) report(3, varDefCtx.IDENT().getSymbol().getLine());
             else {
                 int dimensions = varDefCtx.L_BRACKT().size();       // int a[1][2];
                 if (dimensions == 0) {   //VariableSymbol
