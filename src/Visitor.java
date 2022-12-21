@@ -4,7 +4,10 @@ import org.antlr.v4.runtime.tree.RuleNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import symtable.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 
 public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
@@ -17,7 +20,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
     private boolean hasError = false;
 
-    private HashSet<String> hasOutput = new HashSet<>();
+    private HashSet<SysYParser.InitValContext> st=new HashSet<>();
 
     /**
      * 以下属性均与重命名相关
@@ -37,10 +40,8 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
     private void report(int errType, int lineNo) {
         hasError = true;
-        if (!second && !hasOutput.contains(errType + "." + lineNo)) {
-            hasOutput.add(errType + "." + lineNo);
+        if (!second)
             System.err.println("Error type " + errType + " at Line " + lineNo + ":");
-        }
     }
 
     public void setSecond(boolean second) {
@@ -169,7 +170,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         for (SysYParser.VarDefContext varDefCtx : varDefContexts) {
             String varName = varDefCtx.IDENT().getText();
             Symbol tmp = currentScope.getSymbols().get(varName);    // 如果和当前作用域的重名了，才需要进行错误报告
-            if (tmp != null) report(3, varDefCtx.IDENT().getSymbol().getLine());//todo 按道理来说这里之后的错误应该被忽略的，所以应当返回，但是实际上好像并不应该
+            if (tmp != null) report(3, varDefCtx.IDENT().getSymbol().getLine());
             else {
                 int dimensions = varDefCtx.L_BRACKT().size();       // int a[1][2];
                 if (dimensions == 0) {   //VariableSymbol
@@ -185,11 +186,11 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
                     currentScope.define(symbol);
                 }
                 // 保证初始化是正确的，因此这里不予处理
-//                if (!second && varDefCtx.initVal() != null) {
-//                    Type initType = (Type) this.visit(varDefCtx.initVal());          //TODO 通过引入hasOutput的map来解决
-//                    if (!type.equals(initType) && !(initType instanceof ErrorType))
-//                        report(5, varDefCtx.IDENT().getSymbol().getLine());
-//                }
+                if(!second && varDefCtx.initVal()!=null){
+                    Type initType = (Type) this.visit(varDefCtx.initVal());
+                    if(!(initType instanceof ErrorType) && !type.equals(initType))
+                        report(5,varDefCtx.ASSIGN().getSymbol().getLine());
+                }
             }
             // renameRecord记录
             if (!second && varDefCtx.IDENT().getSymbol().getLine() == lineNo
@@ -198,6 +199,14 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
             }
         }
         return super.visitVarDecl(ctx);
+    }
+
+    @Override
+    public T visitInitVal(SysYParser.InitValContext ctx) {
+        if(second) return super.visitInitVal(ctx);
+        if(st.contains(ctx)) return null;
+        st.add(ctx);
+        return super.visitInitVal(ctx);
     }
 
     @Override
@@ -306,7 +315,8 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         if (symbol == null) {
             report(2, ctx.IDENT().getSymbol().getLine());
             return (T) new ErrorType();
-        } else if (!(symbol instanceof FunctionSymbol)) { //检查是否为变量的symbol而不是函数的symbol
+        }
+        else if (!(symbol instanceof FunctionSymbol)) { //检查是否为变量的symbol而不是函数的symbol
             report(10, ctx.IDENT().getSymbol().getLine());
             return (T) new ErrorType();                //second 不会触及此行
         } else {          // 检查参数传递是否正确
@@ -338,7 +348,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
             return (T) functionType.getRetType();
         }
 
-//        return super.visitCallFuncExp(ctx);           // unreachable
+//        return super.visitCallFuncExp(ctx);
     }
 
     @Override
@@ -524,12 +534,12 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         SysYParser.FuncFParamsContext funcFParamsCtx = ctx.funcFParams();
 
         ArrayList<Type> paramsType = new ArrayList<>();
-        HashSet<String> names = new HashSet<>();              //花名册
+        HashSet<String> names=new HashSet<>();              //花名册
         ArrayList<Symbol> defineList = new ArrayList<>();
         if (funcFParamsCtx != null) {       // 如果有参数
             List<SysYParser.FuncFParamContext> funcFParamCtxs = funcFParamsCtx.funcFParam();
             for (SysYParser.FuncFParamContext funcFParamCtx : funcFParamCtxs) {
-                if (!names.contains(funcFParamCtx.IDENT().getText())) names.add(funcFParamCtx.IDENT().getText());
+                if(!names.contains(funcFParamCtx.IDENT().getText())) names.add(funcFParamCtx.IDENT().getText());
                 else continue;          // skip
 
                 String paramTypeName = funcFParamCtx.bType().getText();
@@ -718,8 +728,8 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
                 }
             } else if (!second) {
                 Type type = (Type) this.visit(ctx.exp());
-                if (type != null && !(type instanceof ErrorType))                                  //TODO 导致 hardtest3 有 extra output
-                    if (!type.equals(defineRetType))
+                if (type != null)                                  //TODO 导致 hardtest3 有 extra output
+                    if (!type.equals(defineRetType) && !(type instanceof ErrorType))
                         report(7, lineNum);
             }
         }
