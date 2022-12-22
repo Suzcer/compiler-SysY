@@ -20,7 +20,6 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
     private boolean hasError = false;
 
-    private HashSet<SysYParser.InitValContext> st=new HashSet<>();
 
     /**
      * 以下属性均与重命名相关
@@ -184,12 +183,14 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
                     }
                     ArraySymbol symbol = new ArraySymbol(varName, ptr);
                     currentScope.define(symbol);
+                    if(!second)
+                        for (int i = 0; i < dimensions; i++) this.visit(varDefCtx.constExp(i));
                 }
                 // 保证初始化是正确的，因此这里不予处理
-                if(!second && varDefCtx.initVal()!=null){
+                if (!second && varDefCtx.initVal() != null) {
                     Type initType = (Type) this.visit(varDefCtx.initVal());
-                    if(!(initType instanceof ErrorType) && !type.equals(initType))
-                        report(5,varDefCtx.ASSIGN().getSymbol().getLine());
+                    if (!(initType instanceof ErrorType) && !type.equals(initType))
+                        report(5, varDefCtx.ASSIGN().getSymbol().getLine());
                 }
             }
             // renameRecord记录
@@ -198,16 +199,10 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
                 renameRecord = currentScope.findScope(varName) + "." + baseTrans(varDefCtx.IDENT().getSymbol().getText());
             }
         }
-        return super.visitVarDecl(ctx);
+        if (second) return super.visitVarDecl(ctx);
+        return null;
     }
 
-    @Override
-    public T visitInitVal(SysYParser.InitValContext ctx) {
-        if(second) return super.visitInitVal(ctx);
-        if(st.contains(ctx)) return null;
-        st.add(ctx);
-        return super.visitInitVal(ctx);
-    }
 
     @Override
     public T visitConstDecl(SysYParser.ConstDeclContext ctx) {
@@ -315,8 +310,7 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         if (symbol == null) {
             report(2, ctx.IDENT().getSymbol().getLine());
             return (T) new ErrorType();
-        }
-        else if (!(symbol instanceof FunctionSymbol)) { //检查是否为变量的symbol而不是函数的symbol
+        } else if (!(symbol instanceof FunctionSymbol)) { //检查是否为变量的symbol而不是函数的symbol
             report(10, ctx.IDENT().getSymbol().getLine());
             return (T) new ErrorType();                //second 不会触及此行
         } else {          // 检查参数传递是否正确
@@ -534,12 +528,12 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
         SysYParser.FuncFParamsContext funcFParamsCtx = ctx.funcFParams();
 
         ArrayList<Type> paramsType = new ArrayList<>();
-        HashSet<String> names=new HashSet<>();              //花名册
+        HashSet<String> names = new HashSet<>();              //花名册
         ArrayList<Symbol> defineList = new ArrayList<>();
         if (funcFParamsCtx != null) {       // 如果有参数
             List<SysYParser.FuncFParamContext> funcFParamCtxs = funcFParamsCtx.funcFParam();
             for (SysYParser.FuncFParamContext funcFParamCtx : funcFParamCtxs) {
-                if(!names.contains(funcFParamCtx.IDENT().getText())) names.add(funcFParamCtx.IDENT().getText());
+                if (!names.contains(funcFParamCtx.IDENT().getText())) names.add(funcFParamCtx.IDENT().getText());
                 else continue;          // skip
 
                 String paramTypeName = funcFParamCtx.bType().getText();
