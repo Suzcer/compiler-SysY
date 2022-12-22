@@ -183,8 +183,8 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
                     }
                     ArraySymbol symbol = new ArraySymbol(varName, ptr);
                     currentScope.define(symbol);
-                    if(!second)
-                        for (int i = 0; i < dimensions; i++) this.visit(varDefCtx.constExp(i));
+//                    if(!second)     // 因为下面的initVal都需要单独访问，所以这里也需要
+//                        for (int i = 0; i < dimensions; i++) this.visit(varDefCtx.constExp(i));
                 }
                 // 保证初始化是正确的，因此这里不予处理
                 if (!second && varDefCtx.initVal() != null) {
