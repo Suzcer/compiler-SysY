@@ -20,7 +20,6 @@ public class Visitor<T> extends SysYParserBaseVisitor<T> {
 
     private boolean hasError = false;
 
-
     /**
      * 以下属性均与重命名相关
      **/
