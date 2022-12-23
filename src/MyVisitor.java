@@ -14,15 +14,6 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
     LLVMBuilderRef builder;
     LLVMTypeRef i32Type;
     LLVMValueRef zero;
-    LLVMValueRef nine;
-
-    PointerPointer<Pointer> mainParamTypes;
-
-    LLVMTypeRef mainRetType;
-
-    LLVMValueRef mainFunction;
-
-    LLVMBasicBlockRef mainEntry;
 
     String des;
 
@@ -67,10 +58,10 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
 
     @Override
     public LLVMValueRef visitFuncDef(SysYParser.FuncDefContext ctx) {
-        mainParamTypes = new PointerPointer<>(0);
-        mainRetType = LLVMFunctionType(i32Type, mainParamTypes, 0, 0);
-        mainFunction = LLVMAddFunction(module, "main", mainRetType);
-        mainEntry = LLVMAppendBasicBlock(mainFunction, "mainEntry");
+        PointerPointer<Pointer> mainParamTypes = new PointerPointer<>(0);
+        LLVMTypeRef mainRetType = LLVMFunctionType(i32Type, mainParamTypes, 0, 0);
+        LLVMValueRef mainFunction = LLVMAddFunction(module, "main", mainRetType);
+        LLVMBasicBlockRef mainEntry = LLVMAppendBasicBlock(mainFunction, "mainEntry");
         LLVMPositionBuilderAtEnd(builder, mainEntry);
         return super.visitFuncDef(ctx);
     }
@@ -121,7 +112,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
             ret = LLVMBuildXor(builder, ret, LLVMConstInt(LLVMInt1Type(), 1, 0), "");
             ret = LLVMBuildZExt(builder, ret, i32Type, "");
         } else if (ctx.unaryOp().MINUS() != null) {
-            ret = LLVMBuildNeg(builder,val,"");
+            ret = LLVMBuildNeg(builder, val, "");
         } else {        //PLUS, no action
 
         }
