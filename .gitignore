@@ -19,3 +19,5 @@
 /target
 .DS_Store
 /out
+/pom.xml
+/src/llvm/
