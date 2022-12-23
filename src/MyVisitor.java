@@ -24,11 +24,6 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
 
     LLVMBasicBlockRef mainEntry;
 
-    LLVMValueRef alloca1;
-    LLVMValueRef alloca4;
-
-    LLVMValueRef load4;
-
     String des;
 
     public static final BytePointer error = new BytePointer();
@@ -53,14 +48,6 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         i32Type = LLVMInt32Type();
         zero = LLVMConstInt(i32Type, 0, 0);
 
-        mainParamTypes = new PointerPointer<>(0);
-
-        mainRetType = LLVMFunctionType(i32Type, mainParamTypes, 0, 0);
-
-        mainFunction = LLVMAddFunction(module, "main", mainRetType);
-
-        mainEntry = LLVMAppendBasicBlock(mainFunction, "mainEntry");
-        LLVMPositionBuilderAtEnd(builder, mainEntry);
 
 //        alloca4 = LLVMBuildAlloca(builder, i32Type, "");
 //        load4 = LLVMBuildLoad(builder, alloca4, "");
@@ -80,6 +67,11 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
 
     @Override
     public LLVMValueRef visitFuncDef(SysYParser.FuncDefContext ctx) {
+        mainParamTypes = new PointerPointer<>(0);
+        mainRetType = LLVMFunctionType(i32Type, mainParamTypes, 0, 0);
+        mainFunction = LLVMAddFunction(module, "main", mainRetType);
+        mainEntry = LLVMAppendBasicBlock(mainFunction, "mainEntry");
+        LLVMPositionBuilderAtEnd(builder, mainEntry);
         return super.visitFuncDef(ctx);
     }
 
@@ -99,7 +91,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         if (ctx.MUL() != null)
             ret = LLVMBuildMul(builder, lhs, rhs, "");
         else if (ctx.DIV() != null)
-            ret = LLVMBuildSDiv(builder, lhs, rhs, "");//TODO choose which
+            ret = LLVMBuildSDiv(builder, lhs, rhs, "");
         else
             ret = LLVMBuildSRem(builder, lhs, rhs, "");
         // srem指令: has sign
@@ -130,7 +122,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
             ret = LLVMBuildZExt(builder, ret, i32Type, "");
         } else if (ctx.unaryOp().MINUS() != null) {
             ret = LLVMBuildNeg(builder,val,"");
-        } else {        //PLUS
+        } else {        //PLUS, no action
 
         }
         return ret;
