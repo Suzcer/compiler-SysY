@@ -36,28 +36,30 @@ block : L_BRACE (blockItem)*R_BRACE;
 
 blockItem : decl| stmt;
 
-stmt: lVal ASSIGN exp SEMICOLON | (exp)? SEMICOLON| block
-      | IF L_PAREN cond R_PAREN stmt (ELSE stmt)?
-      | WHILE L_PAREN cond R_PAREN stmt
-      | BREAK SEMICOLON
-      | CONTINUE SEMICOLON
-      | RETURN (exp)? SEMICOLON ;
+stmt: lVal ASSIGN exp SEMICOLON 			#AssignStmt
+      | (exp)? SEMICOLON				    #ExpStmt
+      | block						        #BlockStmt
+      | IF L_PAREN cond R_PAREN stmt (ELSE stmt)?	#IfStmt
+      | WHILE L_PAREN cond R_PAREN stmt			    #WhileStmt
+      | BREAK SEMICOLON					            #BreakStmt
+      | CONTINUE SEMICOLON				            #ContinueStmt
+      | RETURN (exp)? SEMICOLON 			        #ReturnStmt;
 
-exp : L_PAREN exp R_PAREN #expParenthesis
-   | lVal #lvalExp
-   | number #numberExp
-   | IDENT L_PAREN funcRParams? R_PAREN #callFuncExp
-   | unaryOp exp #unaryOpExp
-   | exp (MUL | DIV | MOD) exp #mulExp
-   | exp (PLUS | MINUS) exp #plusExp
+exp : L_PAREN exp R_PAREN  		        #PARENS
+   | lVal 		   		                #LvalExp
+   | number 				            #NumberExp
+   | IDENT L_PAREN funcRParams? R_PAREN #CallFuncExp
+   | unaryOp exp 			            #UnaryOpExp
+   | exp (MUL | DIV | MOD) exp 		    #MulExp
+   | exp (PLUS | MINUS) exp 		    #PlusExp
    ;
 
 cond
-   : exp #expCond
-   | cond (LT | GT | LE | GE) cond #ltCond
-   | cond (EQ | NEQ) cond #eqCond
-   | cond AND cond #andCond
-   | cond OR cond #orCond
+   : exp                            #expCond
+   | cond (LT | GT | LE | GE) cond  #ltCond
+   | cond (EQ | NEQ) cond           #eqCond
+   | cond AND cond                  #andCond
+   | cond OR cond                   #orCond
    ;
 
 lVal: IDENT (L_BRACKT exp R_BRACKT)*;

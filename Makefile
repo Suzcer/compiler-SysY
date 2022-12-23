@@ -35,11 +35,11 @@ test: compile
 clean:
 	rm -f src/*.tokens
 	rm -f src/*.interp
-	rm -f src/SysYLexer.java src/SysYParser.java src/SysYParserBaseListener.java src/SysYParserBaseVisitor.java src/SysYParserListener.java src/SysYParserVisitor.java
+	#rm -f src/SysYLexer.java src/SysYParser.java src/SysYParserBaseListener.java src/SysYParserBaseVisitor.java src/SysYParserListener.java src/SysYParserVisitor.java
 	rm -rf classes
 
 
-submit: clean compile
+submit: clean
 	git gc
 	#bash -c "$$(curl -s $(DOMAINNAME)/scripts/submit-v2.sh)"
 	bash submit.sh
