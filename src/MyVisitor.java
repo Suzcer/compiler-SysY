@@ -132,8 +132,22 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
 
     @Override
     public LLVMValueRef visitNumber(SysYParser.NumberContext ctx) {
-        int num = Integer.parseInt(ctx.getText());
+        int num = baseTrans(ctx.getText());
         LLVMValueRef numRef = LLVMConstInt(i32Type, num, 0);
         return numRef;
+    }
+
+    private int baseTrans(String text) {
+        if (text.charAt(0) == '0' && text.length() >= 2) {
+            int i;
+            if (text.charAt(1) == 'x' || text.charAt(1) == 'X') {
+                i = Integer.parseInt(text.substring(2), 16);
+            } else {
+                i = Integer.parseInt(text, 8);
+            }
+            return i;
+        } else {
+            return Integer.parseInt(text);
+        }
     }
 }
