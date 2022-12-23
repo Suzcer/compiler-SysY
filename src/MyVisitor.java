@@ -52,7 +52,6 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         //4. 考虑到我们的语言中仅存在int一个基本类型，可以通过下面的语句为LLVM的int型重命名方便以后使用
         i32Type = LLVMInt32Type();
         zero = LLVMConstInt(i32Type, 0, 0);
-        nine = LLVMConstInt(i32Type, 9, 0);
 
         mainParamTypes = new PointerPointer<>(0);
 
@@ -77,6 +76,11 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
             LLVMDisposeMessage(error);
         }
         return null;
+    }
+
+    @Override
+    public LLVMValueRef visitFuncDef(SysYParser.FuncDefContext ctx) {
+        return super.visitFuncDef(ctx);
     }
 
     @Override
@@ -121,7 +125,9 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         LLVMValueRef val = this.visit(ctx.exp());
         LLVMValueRef ret = val;
         if (ctx.unaryOp().NOT() != null) {
-
+            ret = LLVMBuildICmp(builder, LLVMIntNE, LLVMConstInt(i32Type, 0, 0), ret, "");
+            ret = LLVMBuildXor(builder, ret, LLVMConstInt(LLVMInt1Type(), 1, 0), "");
+            ret = LLVMBuildZExt(builder, ret, i32Type, "");
         } else if (ctx.unaryOp().MINUS() != null) {
             ret = LLVMBuildNeg(builder,val,"");
         } else {        //PLUS
