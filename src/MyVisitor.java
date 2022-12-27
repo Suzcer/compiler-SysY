@@ -40,9 +40,6 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         zero = LLVMConstInt(i32Type, 0, 0);
 
 
-//        alloca4 = LLVMBuildAlloca(builder, i32Type, "");
-//        load4 = LLVMBuildLoad(builder, alloca4, "");
-//        LLVMBuildRet(builder, load4);
 
     }
 
