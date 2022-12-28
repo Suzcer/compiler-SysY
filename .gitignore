@@ -20,3 +20,4 @@
 .DS_Store
 /out
 /target
+/hs_err_pid*

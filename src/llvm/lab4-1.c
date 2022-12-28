@@ -1,12 +1,8 @@
-int main(){
-    return -2;
+int f(int i){
+    return i;
 }
-//  expect:
-//
-//  ; ModuleID = 'moudle'
-//  source_filename = "moudle"
-//
-//  define i32 @main() {
-//  mainEntry:
-//      ret i32 -2
-//  }
+
+int main(){
+    int a = 1;
+    return f(a) +4;
+}
