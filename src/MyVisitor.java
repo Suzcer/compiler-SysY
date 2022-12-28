@@ -171,8 +171,8 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
     @Override
     public LLVMValueRef visitLvalExp(SysYParser.LvalExpContext ctx) {
         String token= ctx.lVal().IDENT().getText();
-        System.out.println(currentScope.getValueRef(token));
-        if(ctx.lVal().L_BRACKT()!=null){
+//        System.out.println(currentScope.getValueRef(token));
+        if(!ctx.lVal().L_BRACKT().isEmpty()){
             int i = Integer.parseInt(ctx.lVal().exp().get(0).getText());
             LLVMValueRef[] refs=new LLVMValueRef[2];
             refs[0]=constDigit[0];
