@@ -156,6 +156,8 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         }
         super.visitFuncDef(ctx);
 
+        if(ctx.funcType().getText().equals("void"))
+            LLVMBuildRetVoid(builder);
         currentScope = currentScope.getEnclosingScope();
 
         return null;
@@ -163,9 +165,12 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
 
     @Override
     public LLVMValueRef visitReturnStmt(SysYParser.ReturnStmtContext ctx) {
-        LLVMValueRef ret = this.visit(ctx.exp());
-        LLVMBuildRet(builder, ret);
-        return ret;
+        if(ctx.exp()!=null){
+            LLVMValueRef ret = this.visit(ctx.exp());
+            LLVMBuildRet(builder, ret);
+            return ret;
+        }
+        return super.visitReturnStmt(ctx);
     }
 
     @Override

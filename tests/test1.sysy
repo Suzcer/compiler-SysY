@@ -3,6 +3,10 @@ int f(int i){
 }
 
 int main(){
-    int a = 1;
-    return f(a);
+    int a[2] = {8};
+    return f(a[0]);
+}
+
+void fukk(){
+    return ;
 }
