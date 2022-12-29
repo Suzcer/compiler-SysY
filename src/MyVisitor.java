@@ -244,10 +244,10 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
                 arguments = arguments.put(visit);
             }
 
-            retValueRef = LLVMBuildCall(builder, funcValueRef, arguments, paramCtxs.size(), "returnValue");
+            retValueRef = LLVMBuildCall(builder, funcValueRef, arguments, paramCtxs.size(), "");
         } else {
             arguments = new PointerPointer<>(0);
-            retValueRef = LLVMBuildCall(builder, funcValueRef, arguments, 0, "returnValue");
+            retValueRef = LLVMBuildCall(builder, funcValueRef, arguments, 0, "");
         }
 
 //        return super.visitCallFuncExp(ctx);
@@ -266,14 +266,11 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
             refs[1] = LLVMConstInt(i32Type, i, 0);
             LLVMValueRef vectorPointer = currentScope.resolveValueRef(token);
             PointerPointer<Pointer> pp = new PointerPointer<>(refs);
-            LLVMValueRef ptr = LLVMBuildGEP(builder, vectorPointer, pp, 2, "ret");
-//            LLVMValueRef ee = LLVMBuildLoad(builder, ptr, token);
-            lval = ptr;
+            lval = LLVMBuildGEP(builder, vectorPointer, pp, 2, "ret");
         } else {
             lval = currentScope.resolveValueRef(token);
         }
-        if (lval != null)
-            LLVMBuildStore(builder, rval, lval);          // TODO bug here
+        LLVMBuildStore(builder, rval, lval);          //
         return null;
     }
 

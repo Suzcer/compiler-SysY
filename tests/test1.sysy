@@ -1,6 +1,7 @@
-int main(){
-    int b = 3;
-    int a[2]={1};
-    a[0] = b;
+int f(){
     return 1;
+}
+
+int main(){
+    f();
 }
