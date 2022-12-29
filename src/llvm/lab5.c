@@ -1,9 +1,8 @@
-int main() {
-      const int a=1;
-      int b[1]={1};
+int q(int a,int b,int c) {
+      return 1;
 }
 
-void f(){
-
+int main(){
+    int  d =  q(1,2,3);
 }
 

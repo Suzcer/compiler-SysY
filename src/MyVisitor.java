@@ -243,27 +243,27 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
 
     @Override
     public LLVMValueRef visitCallFuncExp(SysYParser.CallFuncExpContext ctx) {
-        LLVMValueRef funcValueRef = globalScope.resolveValueRef(ctx.IDENT().getText());
+        LLVMValueRef funcRef = globalScope.resolveValueRef(ctx.IDENT().getText());
         //实参
         SysYParser.FuncRParamsContext funcRParamsCtx = ctx.funcRParams();
         PointerPointer<Pointer> arguments;
         LLVMValueRef retValueRef;
         if (funcRParamsCtx != null) {
             List<SysYParser.ParamContext> paramCtxs = funcRParamsCtx.param();       // 有可能是 empty()
-            arguments = new PointerPointer<>(paramCtxs.size());
+
+            LLVMValueRef [] refs = new LLVMValueRef[paramCtxs.size()];
 
             for (int i = 0; i < paramCtxs.size(); i++) {
-                LLVMValueRef visit = this.visit(paramCtxs.get(i));
-                arguments = arguments.put(visit);
+                refs[i] = this.visit(paramCtxs.get(i));
             }
+            arguments = new PointerPointer<>(refs);
 
-            retValueRef = LLVMBuildCall(builder, funcValueRef, arguments, paramCtxs.size(), "");
+            retValueRef = LLVMBuildCall(builder, funcRef, arguments, paramCtxs.size(), "");
         } else {
             arguments = new PointerPointer<>(0);
-            retValueRef = LLVMBuildCall(builder, funcValueRef, arguments, 0, "");
+            retValueRef = LLVMBuildCall(builder, funcRef, arguments, 0, "");
         }
 
-//        return super.visitCallFuncExp(ctx);
         return retValueRef;
     }
 
