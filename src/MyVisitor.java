@@ -86,8 +86,6 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
             if (initValCtx != null) {
                 LLVMValueRef initValueRef = this.visit(initValCtx);
                 LLVMBuildStore(builder, initValueRef, ref);       // ref是左边的
-            } else {
-                LLVMBuildStore(builder, constDigit[0], ref);               //TODO 似乎不应该初始化为0
             }
             currentScope.putValueRef(ctx.IDENT().getText(), ref);
         } else {          // vector
@@ -263,8 +261,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
     public LLVMValueRef visitAssignStmt(SysYParser.AssignStmtContext ctx) {
         LLVMValueRef rval = this.visit(ctx.exp());
         LLVMValueRef lval = this.visit(ctx.lVal());
-        LLVMBuildStore(builder,rval,lval);
-
+//        LLVMBuildStore(builder,rval,lval);
         return null;
     }
 

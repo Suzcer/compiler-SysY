@@ -1,9 +1,5 @@
-int g(int w){
-    const int a[2]={-2};
-    return a[1] * w ;
-}
-
 int main(){
-    int q[3]={-1,-1};
-    return q[2]+g(q[1]);
+    int b=3;
+    int a=b;
+    return 1;
 }
