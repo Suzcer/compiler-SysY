@@ -9,5 +9,5 @@ fEntry:
 define i32 @main() {
 mainEntry:
   %0 = call i32 @f()
-  ret void
+  ret i32 0
 }
