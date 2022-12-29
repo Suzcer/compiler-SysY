@@ -2,11 +2,11 @@ int f(int i){
     return i;
 }
 
+const int b=9;
+int q=9;
+
 int main(){
     int a[2] = {8};
-    return f(a[0]);
+    return f(b+q);
 }
 
-void fukk(){
-    return ;
-}

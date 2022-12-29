@@ -10,7 +10,7 @@ public interface Scope {
 
     public void putValueRef(String name, LLVMValueRef valueRef);
 
-    public LLVMValueRef getValueRef(String name);
+    public LLVMValueRef resolveValueRef(String name);
     public Scope getSubScope(String name) ;
     public String getName();
 

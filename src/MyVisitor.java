@@ -118,6 +118,39 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
     }
 
     @Override
+    public LLVMValueRef visitConstDef(SysYParser.ConstDefContext ctx) {
+        if (ctx.L_BRACKT().isEmpty()) {   //one
+            LLVMValueRef ref = LLVMBuildAlloca(builder, i32Type, ctx.IDENT().getText());
+            LLVMValueRef initValueRef = this.visit(ctx.constInitVal());    //一定有初始化的过程
+            LLVMBuildStore(builder, initValueRef, ref);       // ref是左边的
+            currentScope.putValueRef(ctx.IDENT().getText(), ref);
+        } else {          // vector
+            int vecSize = Integer.parseInt(ctx.constExp().get(0).getText());
+
+            LLVMTypeRef vectorType = LLVMVectorType(i32Type, vecSize);
+            LLVMValueRef vectorPointer = LLVMBuildAlloca(builder, vectorType, ctx.IDENT().getText());
+
+            List<SysYParser.ConstInitValContext> constInitValCtxs = ctx.constInitVal().constInitVal();
+            int initSize = constInitValCtxs.size();
+            LLVMValueRef[] initVals = new LLVMValueRef[initSize];
+            for (int j = 0; j < initSize; j++) initVals[j] = this.visit(constInitValCtxs.get(j));
+
+            LLVMValueRef[] refs = new LLVMValueRef[2];
+            refs[0] = constDigit[0];
+
+            for (int j = 0; j < initSize; j++) {
+                refs[1] = LLVMConstInt(i32Type, j, 0);
+                PointerPointer<Pointer> pp = new PointerPointer<>(refs);
+                LLVMValueRef pointer = LLVMBuildGEP(builder, vectorPointer, pp, 2, "pointer");
+                LLVMBuildStore(builder, initVals[j], pointer);
+            }
+
+            currentScope.putValueRef(ctx.IDENT().getText(),vectorPointer);
+        }
+        return super.visitConstDef(ctx);
+    }
+
+    @Override
     public LLVMValueRef visitFuncDef(SysYParser.FuncDefContext ctx) {
 
         SysYParser.FuncFParamsContext funcFParamsCtx = ctx.funcFParams();
@@ -183,20 +216,20 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
             refs[0]=constDigit[0];
             refs[1]=LLVMConstInt(i32Type,i,0);
 
-            LLVMValueRef vectorPointer = currentScope.getValueRef(token);
+            LLVMValueRef vectorPointer = currentScope.resolveValueRef(token);
             PointerPointer<Pointer> pp = new PointerPointer<>(refs);
             LLVMValueRef ptr = LLVMBuildGEP(builder, vectorPointer, pp, 2, "ret");
             LLVMValueRef ee = LLVMBuildLoad(builder, ptr, token);
             return ee;
         }else{
-            return LLVMBuildLoad(builder, currentScope.getValueRef(token),token);
+            return LLVMBuildLoad(builder, currentScope.resolveValueRef(token),token);
         }
 //        return super.visitLvalExp(ctx);
     }
 
     @Override
     public LLVMValueRef visitCallFuncExp(SysYParser.CallFuncExpContext ctx) {
-        LLVMValueRef funcValueRef = globalScope.getValueRef(ctx.IDENT().getText());
+        LLVMValueRef funcValueRef = globalScope.resolveValueRef(ctx.IDENT().getText());
         //实参
         SysYParser.FuncRParamsContext funcRParamsCtx = ctx.funcRParams();
         PointerPointer<Pointer> arguments;

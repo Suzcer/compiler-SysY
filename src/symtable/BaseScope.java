@@ -26,8 +26,15 @@ public class BaseScope implements Scope {
     }
 
     @Override
-    public LLVMValueRef getValueRef(String name) {
-        return valueRefs.get(name);
+    public LLVMValueRef resolveValueRef(String name) {
+        LLVMValueRef ret = valueRefs.get(name);
+        if(ret!=null)
+            return ret;
+
+        if(enclosingScope!=null)
+            return enclosingScope.resolveValueRef(name);
+
+        return null;
     }
 
     @Override
