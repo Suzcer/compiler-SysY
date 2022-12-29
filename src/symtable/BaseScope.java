@@ -13,11 +13,23 @@ public class BaseScope implements Scope {
     private Map<String, LLVMValueRef> valueRefs = new HashMap<>();
     private String name;
 
-    private final Map<String,Scope> subScope=new LinkedHashMap<>();
+    private boolean isBuildRet = false;
+
+    private final Map<String, Scope> subScope = new LinkedHashMap<>();
 
     public BaseScope(String name, Scope enclosingScope) {
         this.name = name;
         this.enclosingScope = enclosingScope;
+    }
+
+    @Override
+    public void setIsBuildRet() {
+        isBuildRet=true;
+    }
+
+    @Override
+    public boolean getIsBuildRet() {
+        return isBuildRet;
     }
 
     @Override
@@ -28,10 +40,10 @@ public class BaseScope implements Scope {
     @Override
     public LLVMValueRef resolveValueRef(String name) {
         LLVMValueRef ret = valueRefs.get(name);
-        if(ret!=null)
+        if (ret != null)
             return ret;
 
-        if(enclosingScope!=null)
+        if (enclosingScope != null)
             return enclosingScope.resolveValueRef(name);
 
         return null;
@@ -43,7 +55,7 @@ public class BaseScope implements Scope {
     }
 
     @Override
-    public void putScope(String name,Scope scope) {
+    public void putScope(String name, Scope scope) {
         this.subScope.put(name, scope);
     }
 

@@ -11,6 +11,10 @@ public interface Scope {
     public void putValueRef(String name, LLVMValueRef valueRef);
 
     public LLVMValueRef resolveValueRef(String name);
+
+    public void setIsBuildRet();
+
+    public boolean getIsBuildRet();
     public Scope getSubScope(String name) ;
     public String getName();
 
