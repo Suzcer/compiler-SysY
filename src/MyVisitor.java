@@ -228,7 +228,6 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
     }
 
 
-
     @Override
     public LLVMValueRef visitCallFuncExp(SysYParser.CallFuncExpContext ctx) {
         LLVMValueRef funcValueRef = globalScope.resolveValueRef(ctx.IDENT().getText());
@@ -268,13 +267,13 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
             LLVMValueRef vectorPointer = currentScope.resolveValueRef(token);
             PointerPointer<Pointer> pp = new PointerPointer<>(refs);
             LLVMValueRef ptr = LLVMBuildGEP(builder, vectorPointer, pp, 2, "ret");
-            LLVMValueRef ee = LLVMBuildLoad(builder, ptr, token);
-            lval=null;
+//            LLVMValueRef ee = LLVMBuildLoad(builder, ptr, token);
+            lval = ptr;
         } else {
             lval = currentScope.resolveValueRef(token);
         }
-        if(lval!=null)
-        LLVMBuildStore(builder,rval,lval);          // TODO bug here
+        if (lval != null)
+            LLVMBuildStore(builder, rval, lval);          // TODO bug here
         return null;
     }
 
