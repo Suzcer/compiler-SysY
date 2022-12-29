@@ -35,7 +35,7 @@ test: compile
 clean:
 	rm -f src/*.tokens
 	rm -f src/*.interp
-	rm -f target
+	rm -rf target
 	#rm -f src/SysYLexer.java src/SysYParser.java src/SysYParserBaseListener.java src/SysYParserBaseVisitor.java src/SysYParserListener.java src/SysYParserVisitor.java
 	rm -rf classes
 
