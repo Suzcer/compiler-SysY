@@ -99,20 +99,21 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
             if (ctx.initVal() != null) {
                 List<SysYParser.InitValContext> initValCtxs = ctx.initVal().initVal();
                 int initSize = initValCtxs.size();
-                LLVMValueRef[] initVals = new LLVMValueRef[initSize];
+                LLVMValueRef[] initVals = new LLVMValueRef[vecSize];
                 for (int j = 0; j < initSize; j++) initVals[j] = this.visit(initValCtxs.get(j));
+                for (int j = initSize; j < vecSize; j++) initVals[j] = constDigit[0];
 
                 LLVMValueRef[] refs = new LLVMValueRef[2];
                 refs[0] = constDigit[0];
 
-                for (int j = 0; j < initSize; j++) {
+                for (int j = 0; j < vecSize; j++) {
                     refs[1] = LLVMConstInt(i32Type, j, 0);
                     PointerPointer<Pointer> pp = new PointerPointer<>(refs);
                     LLVMValueRef pointer = LLVMBuildGEP(builder, vectorPointer, pp, 2, "pointer");
                     LLVMBuildStore(builder, initVals[j], pointer);
                 }
             }
-            currentScope.putValueRef(ctx.IDENT().getText(),vectorPointer);
+            currentScope.putValueRef(ctx.IDENT().getText(), vectorPointer);
         }
         return super.visitVarDef(ctx);
     }
@@ -132,20 +133,21 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
 
             List<SysYParser.ConstInitValContext> constInitValCtxs = ctx.constInitVal().constInitVal();
             int initSize = constInitValCtxs.size();
-            LLVMValueRef[] initVals = new LLVMValueRef[initSize];
+            LLVMValueRef[] initVals = new LLVMValueRef[vecSize];
             for (int j = 0; j < initSize; j++) initVals[j] = this.visit(constInitValCtxs.get(j));
+            for (int j = initSize; j < vecSize; j++) initVals[j] = constDigit[0];
 
             LLVMValueRef[] refs = new LLVMValueRef[2];
             refs[0] = constDigit[0];
 
-            for (int j = 0; j < initSize; j++) {
+            for (int j = 0; j < vecSize; j++) {
                 refs[1] = LLVMConstInt(i32Type, j, 0);
                 PointerPointer<Pointer> pp = new PointerPointer<>(refs);
                 LLVMValueRef pointer = LLVMBuildGEP(builder, vectorPointer, pp, 2, "pointer");
                 LLVMBuildStore(builder, initVals[j], pointer);
             }
 
-            currentScope.putValueRef(ctx.IDENT().getText(),vectorPointer);
+            currentScope.putValueRef(ctx.IDENT().getText(), vectorPointer);
         }
         return super.visitConstDef(ctx);
     }
@@ -189,7 +191,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         }
         super.visitFuncDef(ctx);
 
-        if(ctx.funcType().getText().equals("void"))
+        if (ctx.funcType().getText().equals("void"))
             LLVMBuildRetVoid(builder);
         currentScope = currentScope.getEnclosingScope();
 
@@ -198,7 +200,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
 
     @Override
     public LLVMValueRef visitReturnStmt(SysYParser.ReturnStmtContext ctx) {
-        if(ctx.exp()!=null){
+        if (ctx.exp() != null) {
             LLVMValueRef ret = this.visit(ctx.exp());
             LLVMBuildRet(builder, ret);
             return ret;
@@ -208,21 +210,21 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
 
     @Override
     public LLVMValueRef visitLvalExp(SysYParser.LvalExpContext ctx) {
-        String token= ctx.lVal().IDENT().getText();
+        String token = ctx.lVal().IDENT().getText();
 //        System.out.println(currentScope.getValueRef(token));
-        if(!ctx.lVal().L_BRACKT().isEmpty()){
+        if (!ctx.lVal().L_BRACKT().isEmpty()) {
             int i = Integer.parseInt(ctx.lVal().exp().get(0).getText());
-            LLVMValueRef[] refs=new LLVMValueRef[2];
-            refs[0]=constDigit[0];
-            refs[1]=LLVMConstInt(i32Type,i,0);
+            LLVMValueRef[] refs = new LLVMValueRef[2];
+            refs[0] = constDigit[0];
+            refs[1] = LLVMConstInt(i32Type, i, 0);
 
             LLVMValueRef vectorPointer = currentScope.resolveValueRef(token);
             PointerPointer<Pointer> pp = new PointerPointer<>(refs);
             LLVMValueRef ptr = LLVMBuildGEP(builder, vectorPointer, pp, 2, "ret");
             LLVMValueRef ee = LLVMBuildLoad(builder, ptr, token);
             return ee;
-        }else{
-            return LLVMBuildLoad(builder, currentScope.resolveValueRef(token),token);
+        } else {
+            return LLVMBuildLoad(builder, currentScope.resolveValueRef(token), token);
         }
 //        return super.visitLvalExp(ctx);
     }
