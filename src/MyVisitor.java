@@ -20,6 +20,8 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
     LLVMModuleRef module;
     LLVMBuilderRef builder;
     LLVMTypeRef i32Type;
+
+    LLVMTypeRef voidType;
     LLVMValueRef[] constDigit;
     String des;
 
@@ -43,6 +45,9 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
 
         //4. 考虑到我们的语言中仅存在int一个基本类型，可以通过下面的语句为LLVM的int型重命名方便以后使用
         i32Type = LLVMInt32Type();
+
+        voidType = LLVMVoidType();
+
         initConstDigit();
     }
 
@@ -155,20 +160,22 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
 
         SysYParser.FuncFParamsContext funcFParamsCtx = ctx.funcFParams();
         PointerPointer<Pointer> mainParamTypes;
-        LLVMTypeRef mainRetType;
+        LLVMTypeRef funcType;
+        LLVMTypeRef retType = ctx.funcType().getText().equals("void")? voidType: i32Type;
+
         if (funcFParamsCtx != null) {
             List<SysYParser.FuncFParamContext> funcFParamCtxs = funcFParamsCtx.funcFParam();
             mainParamTypes = new PointerPointer<>(funcFParamCtxs.size());
             for (int i = 0; i < funcFParamCtxs.size(); i++) {
                 mainParamTypes = mainParamTypes.put(i, i32Type);  // Only int will occur
             }
-            mainRetType = LLVMFunctionType(i32Type, mainParamTypes, funcFParamCtxs.size(), 0);
+            funcType = LLVMFunctionType(retType, mainParamTypes, funcFParamCtxs.size(), 0);
         } else {
             mainParamTypes = new PointerPointer<>(0);
-            mainRetType = LLVMFunctionType(i32Type, mainParamTypes, 0, 0);
+            funcType = LLVMFunctionType(retType, mainParamTypes, 0, 0);
         }
 
-        LLVMValueRef curFunction = LLVMAddFunction(module, ctx.IDENT().getText(), mainRetType);
+        LLVMValueRef curFunction = LLVMAddFunction(module, ctx.IDENT().getText(), funcType);
         LLVMBasicBlockRef curEntry = LLVMAppendBasicBlock(curFunction, ctx.IDENT().getText() + "Entry");
         LLVMPositionBuilderAtEnd(builder, curEntry);
 
@@ -189,12 +196,12 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         }
         super.visitFuncDef(ctx);
 
-//        if (!currentScope.getIsBuildRet()){
-//            if(ctx.funcType().getText().equals("void"))
-//                LLVMBuildRetVoid(builder);
-//            else
-//                LLVMBuildRet(builder,constDigit[0]);
-//        }
+        if (!currentScope.getIsBuildRet()){
+            if(ctx.funcType().getText().equals("void"))
+                LLVMBuildRetVoid(builder);
+            else
+                LLVMBuildRet(builder,constDigit[0]);
+        }
 
         currentScope = currentScope.getEnclosingScope();
 
