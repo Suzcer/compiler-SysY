@@ -189,12 +189,12 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         }
         super.visitFuncDef(ctx);
 
-        if (!currentScope.getIsBuildRet()){
-            if(ctx.funcType().getText().equals("void"))
-                LLVMBuildRetVoid(builder);
-            else
-                LLVMBuildRet(builder,constDigit[0]);
-        }
+//        if (!currentScope.getIsBuildRet()){
+//            if(ctx.funcType().getText().equals("void"))
+//                LLVMBuildRetVoid(builder);
+//            else
+//                LLVMBuildRet(builder,constDigit[0]);
+//        }
 
         currentScope = currentScope.getEnclosingScope();
 
