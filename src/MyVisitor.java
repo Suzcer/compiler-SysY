@@ -210,10 +210,14 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
 
     @Override
     public LLVMValueRef visitLvalExp(SysYParser.LvalExpContext ctx) {
-        String token = ctx.lVal().IDENT().getText();
-//        System.out.println(currentScope.getValueRef(token));
-        if (!ctx.lVal().L_BRACKT().isEmpty()) {
-            int i = Integer.parseInt(ctx.lVal().exp().get(0).getText());
+        return super.visitLvalExp(ctx);
+    }
+
+    @Override
+    public LLVMValueRef visitLVal(SysYParser.LValContext ctx) {
+        String token = ctx.IDENT().getText();
+        if (!ctx.L_BRACKT().isEmpty()) {
+            int i = Integer.parseInt(ctx.exp().get(0).getText());
             LLVMValueRef[] refs = new LLVMValueRef[2];
             refs[0] = constDigit[0];
             refs[1] = LLVMConstInt(i32Type, i, 0);
@@ -226,7 +230,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         } else {
             return LLVMBuildLoad(builder, currentScope.resolveValueRef(token), token);
         }
-//        return super.visitLvalExp(ctx);
+//        return super.visitLVal(ctx);
     }
 
     @Override
@@ -253,6 +257,15 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
 
 //        return super.visitCallFuncExp(ctx);
         return retValueRef;
+    }
+
+    @Override
+    public LLVMValueRef visitAssignStmt(SysYParser.AssignStmtContext ctx) {
+        LLVMValueRef rval = this.visit(ctx.exp());
+        LLVMValueRef lval = this.visit(ctx.lVal());
+        LLVMBuildStore(builder,rval,lval);
+
+        return null;
     }
 
     @Override

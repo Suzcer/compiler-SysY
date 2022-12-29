@@ -39,6 +39,14 @@ clean:
 	#rm -f src/SysYLexer.java src/SysYParser.java src/SysYParserBaseListener.java src/SysYParserBaseVisitor.java src/SysYParserListener.java src/SysYParserVisitor.java
 	rm -rf classes
 
+lab5-std:
+	clang -S -emit-llvm src/llvm/lab5.c -o src/llvm/lab5.ll
+	llvm-as src/llvm/lab5.ll -o src/llvm/lab5.bc
+	lli src/llvm/lab5.bc
+
+lab5-mine:
+	llvm-as tests/lab4.ll -o tests/lab4.bc
+	lli tests/lab4.bc
 
 submit: clean
 	git gc
