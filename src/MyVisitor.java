@@ -72,13 +72,6 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
 
     @Override
     public LLVMValueRef visitVarDecl(SysYParser.VarDeclContext ctx) {
-//        List<SysYParser.VarDefContext> varDefCtxs = ctx.varDef();
-//        if (varDefCtxs != null) {
-//            for (int i = 0; i < varDefCtxs.size(); i++) {
-//                this.visit(varDefCtxs.get(i));
-//            }
-//        }
-
         return super.visitVarDecl(ctx);
     }
 
