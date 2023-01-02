@@ -10,6 +10,10 @@ public interface Scope {
 
     public void putValueRef(String name, LLVMValueRef valueRef);
 
+    public void putConst(String name,int i);
+
+    public int getConst(String name);
+
     public LLVMValueRef resolveValueRef(String name);
 
     public void setIsBuildRet();

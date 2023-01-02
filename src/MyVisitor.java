@@ -9,6 +9,7 @@ import symtable.Scope;
 import java.util.List;
 
 import static org.bytedeco.llvm.global.LLVM.*;
+import static org.bytedeco.llvm.global.LLVM.LLVMConstIntGetSExtValue;
 
 
 public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
@@ -87,7 +88,8 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
             }
             currentScope.putValueRef(ctx.IDENT().getText(), ref);
         } else {          // vector
-            int vecSize = Integer.parseInt(ctx.constExp().get(0).getText());
+            LLVMValueRef visit = this.visit(ctx.constExp(0));
+            int vecSize = (int) LLVMConstIntGetSExtValue(visit);
 
             LLVMTypeRef vectorType = LLVMVectorType(i32Type, vecSize);
             LLVMValueRef vectorPointer = LLVMBuildAlloca(builder, vectorType, ctx.IDENT().getText());
@@ -121,8 +123,10 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
             LLVMValueRef initValueRef = this.visit(ctx.constInitVal());    //一定有初始化的过程
             LLVMBuildStore(builder, initValueRef, ref);       // ref是左边的
             currentScope.putValueRef(ctx.IDENT().getText(), ref);
+            currentScope.putConst(ctx.IDENT().getText(), (int) LLVMConstIntGetSExtValue(initValueRef));
         } else {          // vector
-            int vecSize = Integer.parseInt(ctx.constExp().get(0).getText());
+            LLVMValueRef visit = this.visit(ctx.constExp(0));
+            int vecSize = (int) LLVMConstIntGetSExtValue(visit);
 
             LLVMTypeRef vectorType = LLVMVectorType(i32Type, vecSize);
             LLVMValueRef vectorPointer = LLVMBuildAlloca(builder, vectorType, ctx.IDENT().getText());
@@ -154,7 +158,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         SysYParser.FuncFParamsContext funcFParamsCtx = ctx.funcFParams();
         PointerPointer<Pointer> mainParamTypes;
         LLVMTypeRef funcType;
-        LLVMTypeRef retType = ctx.funcType().getText().equals("void")? voidType: i32Type;
+        LLVMTypeRef retType = ctx.funcType().getText().equals("void") ? voidType : i32Type;
 
         if (funcFParamsCtx != null) {
             List<SysYParser.FuncFParamContext> funcFParamCtxs = funcFParamsCtx.funcFParam();
@@ -189,11 +193,11 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         }
         super.visitFuncDef(ctx);
 
-        if (!currentScope.getIsBuildRet()){
-            if(ctx.funcType().getText().equals("void"))
+        if (!currentScope.getIsBuildRet()) {
+            if (ctx.funcType().getText().equals("void"))
                 LLVMBuildRetVoid(builder);
             else
-                LLVMBuildRet(builder,constDigit[0]);
+                LLVMBuildRet(builder, constDigit[0]);
         }
 
         currentScope = currentScope.getEnclosingScope();
@@ -225,12 +229,12 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
             LLVMValueRef vectorPointer = currentScope.resolveValueRef(token);
             PointerPointer<Pointer> pp = new PointerPointer<>(refs);
             LLVMValueRef ptr = LLVMBuildGEP(builder, vectorPointer, pp, 2, "ret");
-            LLVMValueRef ee = LLVMBuildLoad(builder, ptr, token);
-            return ee;
+            return LLVMBuildLoad(builder, ptr, token);
         } else {
-            return LLVMBuildLoad(builder, currentScope.resolveValueRef(token), token);
+            LLVMValueRef llvmValueRef = LLVMConstInt(i32Type, currentScope.getConst(token), 0);
+            return llvmValueRef;
+//            return LLVMBuildLoad(builder, currentScope.resolveValueRef(token), token);
         }
-//        return super.visitLvalExp(ctx);
     }
 
 
@@ -244,7 +248,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         if (funcRParamsCtx != null) {
             List<SysYParser.ParamContext> paramCtxs = funcRParamsCtx.param();       // 有可能是 empty()
 
-            LLVMValueRef [] refs = new LLVMValueRef[paramCtxs.size()];
+            LLVMValueRef[] refs = new LLVMValueRef[paramCtxs.size()];
 
             for (int i = 0; i < paramCtxs.size(); i++) {
                 refs[i] = this.visit(paramCtxs.get(i));

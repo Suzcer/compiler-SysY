@@ -11,6 +11,8 @@ public class BaseScope implements Scope {
     private final Scope enclosingScope;
 
     private Map<String, LLVMValueRef> valueRefs = new HashMap<>();
+
+    private Map<String,Integer> consts = new HashMap<>();
     private String name;
 
     private boolean isBuildRet = false;
@@ -30,6 +32,16 @@ public class BaseScope implements Scope {
     @Override
     public boolean getIsBuildRet() {
         return isBuildRet;
+    }
+
+    @Override
+    public void putConst(String name, int i) {
+        consts.put(name,i);
+    }
+
+    @Override
+    public int getConst(String name) {
+        return consts.get(name);
     }
 
     @Override
