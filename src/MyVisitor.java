@@ -286,6 +286,11 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
     }
 
     @Override
+    public LLVMValueRef visitPARENS(SysYParser.PARENSContext ctx) {
+        return this.visit(ctx.exp());
+    }
+
+    @Override
     public LLVMValueRef visitMulExp(SysYParser.MulExpContext ctx) {
         List<SysYParser.ExpContext> exps = ctx.exp();
         LLVMValueRef lhs = this.visit(exps.get(0));
