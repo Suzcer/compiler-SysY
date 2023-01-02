@@ -10,7 +10,12 @@ mainEntry:
   store i32 1, i32* %pointer, align 4
   %pointer1 = getelementptr <2 x i32>, <2 x i32>* %a, i32 0, i32 1
   store i32 2, i32* %pointer1, align 4
-  %ret = getelementptr <2 x i32>, <2 x i32>* %a, i32 0, i32 0
-  %a2 = load i32, i32* %ret, align 4
-  ret i32 %a2
+  %c = alloca i32, align 4
+  store i32 2, i32* %c, align 4
+  %c2 = load i32, i32* %c, align 4
+  %ret = getelementptr <2 x i32>, <2 x i32>* %a, i32 0, i32 1
+  store i32 %c2, i32* %ret, align 4
+  %ret3 = getelementptr <2 x i32>, <2 x i32>* %a, i32 0, i32 0
+  %a4 = load i32, i32* %ret3, align 4
+  ret i32 %a4
 }

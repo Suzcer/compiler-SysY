@@ -3,5 +3,7 @@ int main(){
     int a[b] = {1,2};
     //int a[2] ={1,2};
     //a[1] = b;
+    int c = b;
+    a[1] = c;
     return a[0];
 }

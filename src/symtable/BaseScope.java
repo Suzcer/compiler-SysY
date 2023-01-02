@@ -45,6 +45,11 @@ public class BaseScope implements Scope {
     }
 
     @Override
+    public boolean constContainKey(String name) {
+        return consts.containsKey(name);
+    }
+
+    @Override
     public void putValueRef(String name, LLVMValueRef valueRef) {
         valueRefs.put(name, valueRef);
     }

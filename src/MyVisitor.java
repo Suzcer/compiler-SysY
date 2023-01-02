@@ -231,9 +231,10 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
             LLVMValueRef ptr = LLVMBuildGEP(builder, vectorPointer, pp, 2, "ret");
             return LLVMBuildLoad(builder, ptr, token);
         } else {
-            LLVMValueRef llvmValueRef = LLVMConstInt(i32Type, currentScope.getConst(token), 0);
-            return llvmValueRef;
-//            return LLVMBuildLoad(builder, currentScope.resolveValueRef(token), token);
+            if(currentScope.constContainKey(token)){
+                return LLVMConstInt(i32Type, currentScope.getConst(token), 0);
+            }
+            return LLVMBuildLoad(builder, currentScope.resolveValueRef(token), token);
         }
     }
 

@@ -14,6 +14,8 @@ public interface Scope {
 
     public int getConst(String name);
 
+    public boolean constContainKey(String name);
+
     public LLVMValueRef resolveValueRef(String name);
 
     public void setIsBuildRet();
