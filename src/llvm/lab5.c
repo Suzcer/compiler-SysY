@@ -1,8 +1,2 @@
-int q(int a,int b,int c) {
-      return 1;
-}
-
-int main(){
-    int  d =  q(1,2,3);
-}
-
+int a = 10;
+int b[2] = { 5,12 };
