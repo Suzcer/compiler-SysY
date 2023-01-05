@@ -264,21 +264,21 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
     @Override
     public LLVMValueRef visitIfStmt(SysYParser.IfStmtContext ctx) {
 
-//        LLVMValueRef If = this.visit(ctx.cond());
-//        LLVMBasicBlockRef IfTrue = LLVMAppendBasicBlock(currentScope.getCurFunction(), "If_true");
-//        LLVMBasicBlockRef ELSE = LLVMAppendBasicBlock(currentScope.getCurFunction(), "Else");
-//        LLVMBasicBlockRef Out = LLVMAppendBasicBlock(currentScope.getCurFunction(), "Out");
-//        LLVMBuildCondBr(builder, If, IfTrue, ELSE);
-//
-//        LLVMPositionBuilderAtEnd(builder, IfTrue);
-//        this.visit(ctx.stmt(0));
-//        LLVMBuildBr(builder, Out);
-//
-//        LLVMPositionBuilderAtEnd(builder, ELSE);
-//        if (ctx.stmt(1) != null) this.visit(ctx.stmt(1));
-//        LLVMBuildBr(builder, Out);
-//
-//        LLVMPositionBuilderAtEnd(builder, Out);
+        LLVMValueRef If = this.visit(ctx.cond());
+        LLVMBasicBlockRef IfTrue = LLVMAppendBasicBlock(currentScope.getCurFunction(), "If_true");
+        LLVMBasicBlockRef ELSE = LLVMAppendBasicBlock(currentScope.getCurFunction(), "Else");
+        LLVMBasicBlockRef Out = LLVMAppendBasicBlock(currentScope.getCurFunction(), "Out");
+        LLVMBuildCondBr(builder, If, IfTrue, ELSE);
+
+        LLVMPositionBuilderAtEnd(builder, IfTrue);
+        this.visit(ctx.stmt(0));
+        LLVMBuildBr(builder, Out);
+
+        LLVMPositionBuilderAtEnd(builder, ELSE);
+        if (ctx.stmt(1) != null) this.visit(ctx.stmt(1));
+        LLVMBuildBr(builder, Out);
+
+        LLVMPositionBuilderAtEnd(builder, Out);
 
         return null;
     }
@@ -290,7 +290,12 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         else if (ctx.LT() != null) kind = LLVMIntSLT;
         else if (ctx.GT() != null) kind = LLVMIntSGT;
         else if (ctx.GE() != null) kind = LLVMIntSGE;
-        LLVMValueRef retRef = LLVMBuildICmp(builder, kind, this.visit(ctx.cond(0)), this.visit(ctx.cond(1)), Kinds.get(kind));
+        LLVMValueRef left = this.visit(ctx.cond(0));
+        LLVMValueRef right = this.visit(ctx.cond(1));
+        left = LLVMBuildZExt(builder, left, i32Type, "");
+        right = LLVMBuildZExt(builder, right, i32Type, "");
+
+        LLVMValueRef retRef = LLVMBuildICmp(builder, kind, left, right, Kinds.get(kind));
         return retRef;
     }
 
@@ -299,29 +304,45 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         int kind = -1;
         if (ctx.EQ() != null) kind = LLVMIntEQ;
         else if (ctx.NEQ() != null) kind = LLVMIntNE;
-        LLVMValueRef retRef = LLVMBuildICmp(builder, kind, this.visit(ctx.cond(0)), this.visit(ctx.cond(1)), Kinds.get(kind));
+        LLVMValueRef left = this.visit(ctx.cond(0));
+        LLVMValueRef right = this.visit(ctx.cond(1));
+        left = LLVMBuildZExt(builder, left, i32Type, "");
+        right = LLVMBuildZExt(builder, right, i32Type, "");
+
+        LLVMValueRef retRef = LLVMBuildICmp(builder, kind, left, right, Kinds.get(kind));
         return retRef;
     }
 
     @Override
     public LLVMValueRef visitAndCond(SysYParser.AndCondContext ctx) {
         int kind = LLVMAnd;
-        LLVMValueRef retRef = LLVMBuildICmp(builder, kind, this.visit(ctx.cond(0)), this.visit(ctx.cond(1)), Kinds.get(kind));
+        LLVMValueRef left = this.visit(ctx.cond(0));
+        LLVMValueRef right = this.visit(ctx.cond(1));
+        left = LLVMBuildZExt(builder, left, i32Type, "");
+        right = LLVMBuildZExt(builder, right, i32Type, "");
+
+        LLVMValueRef retRef = LLVMBuildICmp(builder, kind, left, right, Kinds.get(kind));
         return retRef;
     }
 
     @Override
     public LLVMValueRef visitOrCond(SysYParser.OrCondContext ctx) {
         int kind = LLVMOr;
-        LLVMValueRef retRef = LLVMBuildICmp(builder, kind, this.visit(ctx.cond(0)), this.visit(ctx.cond(1)), Kinds.get(kind));
+        LLVMValueRef left = this.visit(ctx.cond(0));
+        LLVMValueRef right = this.visit(ctx.cond(1));
+        left = LLVMBuildZExt(builder, left, i32Type, "");
+        right = LLVMBuildZExt(builder, right, i32Type, "");
+
+        LLVMValueRef retRef = LLVMBuildICmp(builder, kind, left, right, Kinds.get(kind));
         return retRef;
     }
 
     @Override
     public LLVMValueRef visitExpCond(SysYParser.ExpCondContext ctx) {
-        int kind = LLVMIntNE;
-        LLVMValueRef expRetRef = LLVMBuildICmp(builder, kind, this.visit(ctx.exp()), constDigit[0], "ExpCond");
-        return expRetRef;
+//        int kind = LLVMIntNE;
+//        LLVMValueRef expRetRef = LLVMBuildICmp(builder, kind, this.visit(ctx.exp()), constDigit[0], "ExpCond");
+//        return expRetRef;
+        return super.visitExpCond(ctx);
     }
 
     // 右边是左值
