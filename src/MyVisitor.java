@@ -280,7 +280,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
 
         LLVMPositionBuilderAtEnd(builder, Out);
 
-        return super.visitIfStmt(ctx);
+        return null;
     }
 
     @Override
