@@ -21,7 +21,10 @@ public interface Scope {
     public void setIsBuildRet();
 
     public boolean getIsBuildRet();
-    public Scope getSubScope(String name) ;
+
+    public void setCurFunction(LLVMValueRef ref);
+
+    public LLVMValueRef getCurFunction();
     public String getName();
 
     public void setName(String name);

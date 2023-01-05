@@ -6,10 +6,10 @@ import symtable.FunctionSymbol;
 import symtable.GlobalScope;
 import symtable.Scope;
 
+import java.util.HashMap;
 import java.util.List;
 
 import static org.bytedeco.llvm.global.LLVM.*;
-import static org.bytedeco.llvm.global.LLVM.LLVMConstIntGetSExtValue;
 
 
 public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
@@ -24,6 +24,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
 
     LLVMTypeRef voidType;
     LLVMValueRef[] constDigit;
+    HashMap<Integer, String> Kinds = new HashMap<>();
     String des;
 
     public static final BytePointer error = new BytePointer();
@@ -49,14 +50,25 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
 
         voidType = LLVMVoidType();
 
-        initConstDigit();
+        initSth();
     }
 
-    private void initConstDigit() {
+    private void initSth() {
+        //1 init constDigit
         constDigit = new LLVMValueRef[10];
         for (int i = 0; i <= 9; i++) {
             constDigit[i] = LLVMConstInt(i32Type, i, 0);
         }
+
+        //2 init Kinds
+        Kinds.put(LLVMIntSLE, "LE");
+        Kinds.put(LLVMIntSLT, "LT");
+        Kinds.put(LLVMIntSGT, "GT");
+        Kinds.put(LLVMIntSGE, "GE");
+        Kinds.put(LLVMIntEQ, "EQ");
+        Kinds.put(LLVMIntNE, "NEQ");
+        Kinds.put(LLVMAnd, "AND");
+        Kinds.put(LLVMOr, "OR");
     }
 
     @Override
@@ -88,25 +100,25 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
                     LLVMSetInitializer(globalInt, right);
                 }
                 globalScope.putValueRef(ctx.IDENT().getText(), globalInt);
-            }else{
+            } else {
                 LLVMValueRef visit = this.visit(ctx.constExp(0));
-                int vecSize = (int)LLVMConstIntGetSExtValue(visit);
+                int vecSize = (int) LLVMConstIntGetSExtValue(visit);
                 LLVMTypeRef vectorType = LLVMVectorType(i32Type, vecSize);
                 LLVMValueRef globalVec = LLVMAddGlobal(module, vectorType, ctx.IDENT().getText());  //left
 
-                if(ctx.initVal()!=null){
+                if (ctx.initVal() != null) {
                     List<SysYParser.InitValContext> initValCtxs = ctx.initVal().initVal();
                     int initSize = initValCtxs.size();
                     LLVMValueRef[] initVals = new LLVMValueRef[vecSize];
-                    for(int j=0;j<initSize;j++) initVals[j]=this.visit(initValCtxs.get(j));
-                    for(int j=initSize;j<vecSize;j++) initVals[j]=constDigit[0];
+                    for (int j = 0; j < initSize; j++) initVals[j] = this.visit(initValCtxs.get(j));
+                    for (int j = initSize; j < vecSize; j++) initVals[j] = constDigit[0];
 
                     PointerPointer<LLVMValueRef> pp = new PointerPointer<>(initVals);
                     LLVMValueRef constVector = LLVMConstVector(pp, vecSize);                        //right
 
-                    LLVMSetInitializer(globalVec,constVector);
+                    LLVMSetInitializer(globalVec, constVector);
                 }
-                globalScope.putValueRef(ctx.IDENT().getText(),globalVec);
+                globalScope.putValueRef(ctx.IDENT().getText(), globalVec);
             }
             return super.visitVarDef(ctx);
         }
@@ -212,6 +224,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
 
         FunctionSymbol fun = new FunctionSymbol(ctx.IDENT().getText(), currentScope);
         currentScope = fun;
+        currentScope.setCurFunction(curFunction);// set current function
 
         if (funcFParamsCtx != null) {
             List<SysYParser.FuncFParamContext> funcFParamCtxs = funcFParamsCtx.funcFParam();
@@ -246,6 +259,69 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
             return ret;
         }
         return super.visitReturnStmt(ctx);
+    }
+
+    @Override
+    public LLVMValueRef visitIfStmt(SysYParser.IfStmtContext ctx) {
+
+        LLVMValueRef If = this.visit(ctx.cond());
+        LLVMBasicBlockRef IfTrue = LLVMAppendBasicBlock(currentScope.getCurFunction(), "If_true");
+        LLVMBasicBlockRef IfFalse = LLVMAppendBasicBlock(currentScope.getCurFunction(), "If_false");
+        LLVMBasicBlockRef Out = LLVMAppendBasicBlock(currentScope.getCurFunction(), "Out");
+        LLVMBuildCondBr(builder, If, IfTrue, IfFalse);
+
+        LLVMPositionBuilderAtEnd(builder, IfTrue);
+        this.visit(ctx.stmt(0));
+        LLVMBuildBr(builder, Out);
+
+        LLVMPositionBuilderAtEnd(builder, IfFalse);
+        if (ctx.stmt(1) != null) this.visit(ctx.stmt(1));
+        LLVMBuildBr(builder, Out);
+
+        LLVMPositionBuilderAtEnd(builder, Out);
+
+        return super.visitIfStmt(ctx);
+    }
+
+    @Override
+    public LLVMValueRef visitLtCond(SysYParser.LtCondContext ctx) {
+        int kind = -1;
+        if (ctx.LE() != null) kind = LLVMIntSLE;
+        else if (ctx.LT() != null) kind = LLVMIntSLT;
+        else if (ctx.GT() != null) kind = LLVMIntSGT;
+        else if (ctx.GE() != null) kind = LLVMIntSGE;
+        LLVMValueRef retRef = LLVMBuildICmp(builder, kind, this.visit(ctx.cond(0)), this.visit(ctx.cond(1)), Kinds.get(kind));
+        return retRef;
+    }
+
+    @Override
+    public LLVMValueRef visitEqCond(SysYParser.EqCondContext ctx) {
+        int kind = -1;
+        if (ctx.EQ() != null) kind = LLVMIntEQ;
+        else if (ctx.NEQ() != null) kind = LLVMIntNE;
+        LLVMValueRef retRef = LLVMBuildICmp(builder, kind, this.visit(ctx.cond(0)), this.visit(ctx.cond(1)), Kinds.get(kind));
+        return retRef;
+    }
+
+    @Override
+    public LLVMValueRef visitAndCond(SysYParser.AndCondContext ctx) {
+        int kind = LLVMAnd;
+        LLVMValueRef retRef = LLVMBuildICmp(builder, kind, this.visit(ctx.cond(0)), this.visit(ctx.cond(1)), Kinds.get(kind));
+        return retRef;
+    }
+
+    @Override
+    public LLVMValueRef visitOrCond(SysYParser.OrCondContext ctx) {
+        int kind = LLVMOr;
+        LLVMValueRef retRef = LLVMBuildICmp(builder, kind, this.visit(ctx.cond(0)), this.visit(ctx.cond(1)), Kinds.get(kind));
+        return retRef;
+    }
+
+    @Override
+    public LLVMValueRef visitExpCond(SysYParser.ExpCondContext ctx) {
+        int kind = LLVMIntNE;
+        LLVMValueRef expRetRef = LLVMBuildICmp(builder, kind, this.visit(ctx.exp()), constDigit[0], "ExpCond");
+        return expRetRef;
     }
 
     // 右边是左值

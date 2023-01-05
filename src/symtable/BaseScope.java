@@ -17,6 +17,8 @@ public class BaseScope implements Scope {
 
     private boolean isBuildRet = false;
 
+    private LLVMValueRef curFunc;
+
     private final Map<String, Scope> subScope = new LinkedHashMap<>();
 
     public BaseScope(String name, Scope enclosingScope) {
@@ -77,8 +79,13 @@ public class BaseScope implements Scope {
     }
 
     @Override
-    public Scope getSubScope(String name) {
-        return subScope.get(name);
+    public void setCurFunction(LLVMValueRef ref) {
+        curFunc=ref;
+    }
+
+    @Override
+    public LLVMValueRef getCurFunction() {
+        return curFunc;
     }
 
     @Override
