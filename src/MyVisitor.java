@@ -264,23 +264,21 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
     @Override
     public LLVMValueRef visitIfStmt(SysYParser.IfStmtContext ctx) {
 
-        LLVMValueRef If = this.visit(ctx.cond());
-        LLVMBasicBlockRef IfTrue = LLVMAppendBasicBlock(currentScope.getCurFunction(), "If_true");
-        LLVMBasicBlockRef ELSE = LLVMAppendBasicBlock(currentScope.getCurFunction(), "Else");
-        LLVMBasicBlockRef Out = LLVMAppendBasicBlock(currentScope.getCurFunction(), "Out");
-        LLVMBuildCondBr(builder, If, IfTrue, ELSE);
-
-        LLVMPositionBuilderAtEnd(builder, IfTrue);
-        this.visit(ctx.stmt(0));
-        LLVMBuildBr(builder, Out);
-
-        if (ctx.stmt(1) != null){
-            LLVMPositionBuilderAtEnd(builder, ELSE);
-            this.visit(ctx.stmt(1));
-            LLVMBuildBr(builder, Out);
-        }
-
-        LLVMPositionBuilderAtEnd(builder, Out);
+//        LLVMValueRef If = this.visit(ctx.cond());
+//        LLVMBasicBlockRef IfTrue = LLVMAppendBasicBlock(currentScope.getCurFunction(), "If_true");
+//        LLVMBasicBlockRef ELSE = LLVMAppendBasicBlock(currentScope.getCurFunction(), "Else");
+//        LLVMBasicBlockRef Out = LLVMAppendBasicBlock(currentScope.getCurFunction(), "Out");
+//        LLVMBuildCondBr(builder, If, IfTrue, ELSE);
+//
+//        LLVMPositionBuilderAtEnd(builder, IfTrue);
+//        this.visit(ctx.stmt(0));
+//        LLVMBuildBr(builder, Out);
+//
+//        LLVMPositionBuilderAtEnd(builder, ELSE);
+//        if (ctx.stmt(1) != null) this.visit(ctx.stmt(1));
+//        LLVMBuildBr(builder, Out);
+//
+//        LLVMPositionBuilderAtEnd(builder, Out);
 
         return null;
     }
