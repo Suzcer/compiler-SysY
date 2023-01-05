@@ -12,12 +12,11 @@ mainEntry:
 If_true:                                          ; preds = %mainEntry
   %a1 = load i32, i32* getelementptr (<3 x i32>, <3 x i32>* @a, i32 0, i32 1), align 4
   %ExpCond2 = icmp ne i32 %a1, 0
-  br i1 %ExpCond2, label %If_true3, label %If_false4        a[1]
+  br i1 %ExpCond2, label %If_true3, label %If_false4
 
 If_false:                                         ; preds = %mainEntry
-  br label %Out
 
-Out:                                              ; preds = %If_false, %Out5
+Out:                                              ; preds = %Out5
   %a6 = load i32, i32* getelementptr (<3 x i32>, <3 x i32>* @a, i32 0, i32 1), align 4
   ret i32 %a6
 

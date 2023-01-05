@@ -266,17 +266,19 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
 
         LLVMValueRef If = this.visit(ctx.cond());
         LLVMBasicBlockRef IfTrue = LLVMAppendBasicBlock(currentScope.getCurFunction(), "If_true");
-        LLVMBasicBlockRef IfFalse = LLVMAppendBasicBlock(currentScope.getCurFunction(), "If_false");
+        LLVMBasicBlockRef ELSE = LLVMAppendBasicBlock(currentScope.getCurFunction(), "Else");
         LLVMBasicBlockRef Out = LLVMAppendBasicBlock(currentScope.getCurFunction(), "Out");
-        LLVMBuildCondBr(builder, If, IfTrue, IfFalse);
+        LLVMBuildCondBr(builder, If, IfTrue, ELSE);
 
         LLVMPositionBuilderAtEnd(builder, IfTrue);
         this.visit(ctx.stmt(0));
         LLVMBuildBr(builder, Out);
 
-        LLVMPositionBuilderAtEnd(builder, IfFalse);
-        if (ctx.stmt(1) != null) this.visit(ctx.stmt(1));
-        LLVMBuildBr(builder, Out);
+        if (ctx.stmt(1) != null){
+            LLVMPositionBuilderAtEnd(builder, ELSE);
+            this.visit(ctx.stmt(1));
+            LLVMBuildBr(builder, Out);
+        }
 
         LLVMPositionBuilderAtEnd(builder, Out);
 
