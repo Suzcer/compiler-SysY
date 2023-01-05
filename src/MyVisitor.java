@@ -91,37 +91,37 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
     @Override
     public LLVMValueRef visitVarDef(SysYParser.VarDefContext ctx) {
 
-        if (currentScope == globalScope) {
-            if (ctx.L_BRACKT().isEmpty()) {
-                LLVMValueRef globalInt = LLVMAddGlobal(module, i32Type, ctx.IDENT().getText());
-                SysYParser.InitValContext initValCtx = ctx.initVal();
-                if (initValCtx != null) {
-                    LLVMValueRef right = this.visit(initValCtx);
-                    LLVMSetInitializer(globalInt, right);
-                }
-                globalScope.putValueRef(ctx.IDENT().getText(), globalInt);
-            } else {
-                LLVMValueRef visit = this.visit(ctx.constExp(0));
-                int vecSize = (int) LLVMConstIntGetSExtValue(visit);
-                LLVMTypeRef vectorType = LLVMVectorType(i32Type, vecSize);
-                LLVMValueRef globalVec = LLVMAddGlobal(module, vectorType, ctx.IDENT().getText());  //left
-
-                if (ctx.initVal() != null) {
-                    List<SysYParser.InitValContext> initValCtxs = ctx.initVal().initVal();
-                    int initSize = initValCtxs.size();
-                    LLVMValueRef[] initVals = new LLVMValueRef[vecSize];
-                    for (int j = 0; j < initSize; j++) initVals[j] = this.visit(initValCtxs.get(j));
-                    for (int j = initSize; j < vecSize; j++) initVals[j] = constDigit[0];
-
-                    PointerPointer<LLVMValueRef> pp = new PointerPointer<>(initVals);
-                    LLVMValueRef constVector = LLVMConstVector(pp, vecSize);                        //right
-
-                    LLVMSetInitializer(globalVec, constVector);
-                }
-                globalScope.putValueRef(ctx.IDENT().getText(), globalVec);
-            }
-            return super.visitVarDef(ctx);
-        }
+//        if (currentScope == globalScope) {
+//            if (ctx.L_BRACKT().isEmpty()) {
+//                LLVMValueRef globalInt = LLVMAddGlobal(module, i32Type, ctx.IDENT().getText());
+//                SysYParser.InitValContext initValCtx = ctx.initVal();
+//                if (initValCtx != null) {
+//                    LLVMValueRef right = this.visit(initValCtx);
+//                    LLVMSetInitializer(globalInt, right);
+//                }
+//                globalScope.putValueRef(ctx.IDENT().getText(), globalInt);
+//            } else {
+//                LLVMValueRef visit = this.visit(ctx.constExp(0));
+//                int vecSize = (int) LLVMConstIntGetSExtValue(visit);
+//                LLVMTypeRef vectorType = LLVMVectorType(i32Type, vecSize);
+//                LLVMValueRef globalVec = LLVMAddGlobal(module, vectorType, ctx.IDENT().getText());  //left
+//
+//                if (ctx.initVal() != null) {
+//                    List<SysYParser.InitValContext> initValCtxs = ctx.initVal().initVal();
+//                    int initSize = initValCtxs.size();
+//                    LLVMValueRef[] initVals = new LLVMValueRef[vecSize];
+//                    for (int j = 0; j < initSize; j++) initVals[j] = this.visit(initValCtxs.get(j));
+//                    for (int j = initSize; j < vecSize; j++) initVals[j] = constDigit[0];
+//
+//                    PointerPointer<LLVMValueRef> pp = new PointerPointer<>(initVals);
+//                    LLVMValueRef constVector = LLVMConstVector(pp, vecSize);                        //right
+//
+//                    LLVMSetInitializer(globalVec, constVector);
+//                }
+//                globalScope.putValueRef(ctx.IDENT().getText(), globalVec);
+//            }
+//            return super.visitVarDef(ctx);
+//        }
 
         if (ctx.L_BRACKT().isEmpty()) {   //one
             LLVMValueRef ref = LLVMBuildAlloca(builder, i32Type, ctx.IDENT().getText());
@@ -265,7 +265,6 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
     public LLVMValueRef visitIfStmt(SysYParser.IfStmtContext ctx) {
 
         LLVMValueRef If = this.visit(ctx.cond());
-        If = LLVMBuildICmp(builder, LLVMIntNE, If, constDigit[0], "ExpCond"); // no 0
 
         LLVMBasicBlockRef IfTrue = LLVMAppendBasicBlock(currentScope.getCurFunction(), "If_true");
         LLVMBasicBlockRef ELSE = LLVMAppendBasicBlock(currentScope.getCurFunction(), "Else");
