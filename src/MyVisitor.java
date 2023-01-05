@@ -265,6 +265,8 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
     public LLVMValueRef visitIfStmt(SysYParser.IfStmtContext ctx) {
 
         LLVMValueRef If = this.visit(ctx.cond());
+        If = LLVMBuildICmp(builder, LLVMIntNE, If, constDigit[0], "ExpCond"); // no 0
+
         LLVMBasicBlockRef IfTrue = LLVMAppendBasicBlock(currentScope.getCurFunction(), "If_true");
         LLVMBasicBlockRef ELSE = LLVMAppendBasicBlock(currentScope.getCurFunction(), "Else");
         LLVMBasicBlockRef Out = LLVMAppendBasicBlock(currentScope.getCurFunction(), "Out");
