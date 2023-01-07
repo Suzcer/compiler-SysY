@@ -106,18 +106,19 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
                 LLVMTypeRef vectorType = LLVMVectorType(i32Type, vecSize);
                 LLVMValueRef globalVec = LLVMAddGlobal(module, vectorType, ctx.IDENT().getText());  //left
 
+                LLVMValueRef[] initVals= new LLVMValueRef[vecSize];
+                int initSize =0;
                 if (ctx.initVal() != null) {
                     List<SysYParser.InitValContext> initValCtxs = ctx.initVal().initVal();
-                    int initSize = initValCtxs.size();
-                    LLVMValueRef[] initVals = new LLVMValueRef[vecSize];
+                    initSize = initValCtxs.size();
                     for (int j = 0; j < initSize; j++) initVals[j] = this.visit(initValCtxs.get(j));
-                    for (int j = initSize; j < vecSize; j++) initVals[j] = constDigit[0];
-
-                    PointerPointer<LLVMValueRef> pp = new PointerPointer<>(initVals);
-                    LLVMValueRef constVector = LLVMConstVector(pp, vecSize);                        //right
-
-                    LLVMSetInitializer(globalVec, constVector);
                 }
+                for (int j = initSize; j < vecSize; j++) initVals[j] = constDigit[0];           // no init
+                PointerPointer<LLVMValueRef> pp = new PointerPointer<>(initVals);
+                LLVMValueRef constVector = LLVMConstVector(pp, vecSize);                        //right
+
+                LLVMSetInitializer(globalVec, constVector);
+
                 globalScope.putValueRef(ctx.IDENT().getText(), globalVec);
             }
             return super.visitVarDef(ctx);
@@ -417,7 +418,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         else if (ctx.DIV() != null)
             ret = LLVMBuildSDiv(builder, lhs, rhs, "");
         else
-            ret = LLVMBuildSRem(builder, lhs, rhs, "");
+            ret = LLVMBuildSRem(builder, lhs, rhs, "rem");
         // srem指令: has sign
         // urem指令: no sign
         return ret;
