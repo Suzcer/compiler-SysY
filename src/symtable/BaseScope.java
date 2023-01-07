@@ -12,7 +12,7 @@ public class BaseScope implements Scope {
 
     private Map<String, LLVMValueRef> valueRefs = new HashMap<>();
 
-    private Map<String,Integer> consts = new HashMap<>();
+    private Map<String, Integer> consts = new HashMap<>();
     private String name;
 
     private boolean isBuildRet = false;
@@ -28,7 +28,7 @@ public class BaseScope implements Scope {
 
     @Override
     public void setIsBuildRet() {
-        isBuildRet=true;
+        isBuildRet = true;
     }
 
     @Override
@@ -38,17 +38,17 @@ public class BaseScope implements Scope {
 
     @Override
     public void putConst(String name, int i) {
-        consts.put(name,i);
+        consts.put(name, i);
     }
 
     @Override
     public int getConst(String name) {
-        return consts.get(name);
-    }
-
-    @Override
-    public boolean constContainKey(String name) {
-        return consts.containsKey(name);
+        boolean b = consts.containsKey(name);
+        if (b)
+            return consts.get(name);
+        if (enclosingScope != null)
+            return enclosingScope.getConst(name);
+        return -1;
     }
 
     @Override
@@ -80,7 +80,7 @@ public class BaseScope implements Scope {
 
     @Override
     public void setCurFunction(LLVMValueRef ref) {
-        curFunc=ref;
+        curFunc = ref;
     }
 
     @Override

@@ -105,8 +105,8 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
                 LLVMTypeRef vectorType = LLVMVectorType(i32Type, vecSize);
                 LLVMValueRef globalVec = LLVMAddGlobal(module, vectorType, ctx.IDENT().getText());  //left
 
-                LLVMValueRef[] initVals= new LLVMValueRef[vecSize];
-                int initSize =0;
+                LLVMValueRef[] initVals = new LLVMValueRef[vecSize];
+                int initSize = 0;
                 if (ctx.initVal() != null) {
                     List<SysYParser.InitValContext> initValCtxs = ctx.initVal().initVal();
                     initSize = initValCtxs.size();
@@ -162,22 +162,23 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
 
     @Override
     public LLVMValueRef visitConstDef(SysYParser.ConstDefContext ctx) {
-        if(currentScope == globalScope){
+        if (currentScope == globalScope) {
             if (ctx.L_BRACKT().isEmpty()) {
                 LLVMValueRef globalInt = LLVMAddGlobal(module, i32Type, ctx.IDENT().getText());
                 SysYParser.ConstInitValContext constInitValCtx = ctx.constInitVal();
-                LLVMValueRef right= constDigit[0];
-                if (constInitValCtx != null)  right = this.visit(constInitValCtx);
+                LLVMValueRef right = constDigit[0];
+                if (constInitValCtx != null) right = this.visit(constInitValCtx);
                 LLVMSetInitializer(globalInt, right);
                 globalScope.putValueRef(ctx.IDENT().getText(), globalInt);
+                globalScope.putConst(ctx.IDENT().getText(), (int) LLVMConstIntGetSExtValue(right));
             } else {
                 LLVMValueRef visit = this.visit(ctx.constExp(0));
                 int vecSize = (int) LLVMConstIntGetSExtValue(visit);
                 LLVMTypeRef vectorType = LLVMVectorType(i32Type, vecSize);
                 LLVMValueRef globalVec = LLVMAddGlobal(module, vectorType, ctx.IDENT().getText());  //left
 
-                LLVMValueRef[] initVals= new LLVMValueRef[vecSize];
-                int initSize =0;
+                LLVMValueRef[] initVals = new LLVMValueRef[vecSize];
+                int initSize = 0;
                 if (ctx.constInitVal() != null) {
                     List<SysYParser.ConstInitValContext> constInitValCtxs = ctx.constInitVal().constInitVal();
                     initSize = constInitValCtxs.size();
@@ -325,8 +326,8 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         else if (ctx.GT() != null) kind = LLVMIntSGT;
         else if (ctx.GE() != null) kind = LLVMIntSGE;
 
-        LLVMValueRef retRef = LLVMBuildICmp(builder, kind, this.visit(ctx.cond(0)),this.visit(ctx.cond(1)), Kinds.get(kind));
-        retRef = LLVMBuildZExt(builder,retRef,i32Type,"compare");
+        LLVMValueRef retRef = LLVMBuildICmp(builder, kind, this.visit(ctx.cond(0)), this.visit(ctx.cond(1)), Kinds.get(kind));
+        retRef = LLVMBuildZExt(builder, retRef, i32Type, "compare");
         return retRef;
     }
 
@@ -336,8 +337,8 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         if (ctx.EQ() != null) kind = LLVMIntEQ;
         else if (ctx.NEQ() != null) kind = LLVMIntNE;
 
-        LLVMValueRef retRef = LLVMBuildICmp(builder, kind, this.visit(ctx.cond(0)),this.visit(ctx.cond(1)), Kinds.get(kind));
-        retRef = LLVMBuildZExt(builder,retRef,i32Type,"compare");
+        LLVMValueRef retRef = LLVMBuildICmp(builder, kind, this.visit(ctx.cond(0)), this.visit(ctx.cond(1)), Kinds.get(kind));
+        retRef = LLVMBuildZExt(builder, retRef, i32Type, "compare");
         return retRef;
     }
 
@@ -345,8 +346,8 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
     public LLVMValueRef visitAndCond(SysYParser.AndCondContext ctx) {
         int kind = LLVMAnd;
 
-        LLVMValueRef retRef = LLVMBuildICmp(builder, kind, this.visit(ctx.cond(0)),this.visit(ctx.cond(1)), Kinds.get(kind));
-        retRef = LLVMBuildZExt(builder,retRef,i32Type,"compare");
+        LLVMValueRef retRef = LLVMBuildICmp(builder, kind, this.visit(ctx.cond(0)), this.visit(ctx.cond(1)), Kinds.get(kind));
+        retRef = LLVMBuildZExt(builder, retRef, i32Type, "compare");
         return retRef;
     }
 
@@ -354,8 +355,8 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
     public LLVMValueRef visitOrCond(SysYParser.OrCondContext ctx) {
         int kind = LLVMOr;
 
-        LLVMValueRef retRef = LLVMBuildICmp(builder, kind, this.visit(ctx.cond(0)),this.visit(ctx.cond(1)), Kinds.get(kind));
-        retRef = LLVMBuildZExt(builder,retRef,i32Type,"compare");
+        LLVMValueRef retRef = LLVMBuildICmp(builder, kind, this.visit(ctx.cond(0)), this.visit(ctx.cond(1)), Kinds.get(kind));
+        retRef = LLVMBuildZExt(builder, retRef, i32Type, "compare");
         return retRef;
     }
 
@@ -369,8 +370,12 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
     public LLVMValueRef visitLvalExp(SysYParser.LvalExpContext ctx) {
         String token = ctx.lVal().IDENT().getText();
         if (!ctx.lVal().L_BRACKT().isEmpty()) {
-            LLVMValueRef index = this.visit(ctx.lVal().exp(0));
-            int i = (int)LLVMConstIntGetZExtValue(index);
+            int i = currentScope.getConst(ctx.lVal().exp(0).getText());
+            if (i == -1) {
+                LLVMValueRef index = this.visit(ctx.lVal().exp(0));
+                i = (int) LLVMConstIntGetSExtValue(index);
+            }
+
 //            int i = Integer.parseInt(ctx.lVal().exp().get(0).getText());
             LLVMValueRef[] refs = new LLVMValueRef[2];
             refs[0] = constDigit[0];
@@ -381,7 +386,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
             LLVMValueRef ptr = LLVMBuildGEP(builder, vectorPointer, pp, 2, "ret");
             return LLVMBuildLoad(builder, ptr, token);
         } else {
-            if (currentScope.constContainKey(token)) {
+            if (currentScope.getConst(token) != -1) {
                 return LLVMConstInt(i32Type, currentScope.getConst(token), 0);
             }
             return LLVMBuildLoad(builder, currentScope.resolveValueRef(token), token);
@@ -421,8 +426,12 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         LLVMValueRef lval;
         String token = ctx.lVal().IDENT().getText();
         if (!ctx.lVal().L_BRACKT().isEmpty()) {
-            LLVMValueRef index = this.visit(ctx.lVal().exp(0));
-            int i = (int)LLVMConstIntGetZExtValue(index);
+            int i = currentScope.getConst(ctx.lVal().exp(0).getText());
+            if (i == -1) {
+                LLVMValueRef index = this.visit(ctx.lVal().exp(0));
+                i = (int) LLVMConstIntGetSExtValue(index);
+            }
+
 //            int i = Integer.parseInt(ctx.lVal().exp().get(0).getText());
             LLVMValueRef[] refs = new LLVMValueRef[2];
             refs[0] = constDigit[0];
