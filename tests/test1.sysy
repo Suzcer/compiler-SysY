@@ -1,4 +1,6 @@
 const int a[3]={1,2};
 int main(){
+    int b = 1;
+    b = a[b];
     return a[0];
 }
