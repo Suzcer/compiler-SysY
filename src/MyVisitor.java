@@ -95,10 +95,9 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
             if (ctx.L_BRACKT().isEmpty()) {
                 LLVMValueRef globalInt = LLVMAddGlobal(module, i32Type, ctx.IDENT().getText());
                 SysYParser.InitValContext initValCtx = ctx.initVal();
-                if (initValCtx != null) {
-                    LLVMValueRef right = this.visit(initValCtx);
-                    LLVMSetInitializer(globalInt, right);
-                }
+                LLVMValueRef right = constDigit[0];
+                if (initValCtx != null) right = this.visit(initValCtx);
+                LLVMSetInitializer(globalInt, right);
                 globalScope.putValueRef(ctx.IDENT().getText(), globalInt);
             } else {
                 LLVMValueRef visit = this.visit(ctx.constExp(0));
@@ -163,6 +162,38 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
 
     @Override
     public LLVMValueRef visitConstDef(SysYParser.ConstDefContext ctx) {
+        if(currentScope == globalScope){
+            if (ctx.L_BRACKT().isEmpty()) {
+                LLVMValueRef globalInt = LLVMAddGlobal(module, i32Type, ctx.IDENT().getText());
+                SysYParser.ConstInitValContext constInitValCtx = ctx.constInitVal();
+                LLVMValueRef right= constDigit[0];
+                if (constInitValCtx != null)  right = this.visit(constInitValCtx);
+                LLVMSetInitializer(globalInt, right);
+                globalScope.putValueRef(ctx.IDENT().getText(), globalInt);
+            } else {
+                LLVMValueRef visit = this.visit(ctx.constExp(0));
+                int vecSize = (int) LLVMConstIntGetSExtValue(visit);
+                LLVMTypeRef vectorType = LLVMVectorType(i32Type, vecSize);
+                LLVMValueRef globalVec = LLVMAddGlobal(module, vectorType, ctx.IDENT().getText());  //left
+
+                LLVMValueRef[] initVals= new LLVMValueRef[vecSize];
+                int initSize =0;
+                if (ctx.constInitVal() != null) {
+                    List<SysYParser.ConstInitValContext> constInitValCtxs = ctx.constInitVal().constInitVal();
+                    initSize = constInitValCtxs.size();
+                    for (int j = 0; j < initSize; j++) initVals[j] = this.visit(constInitValCtxs.get(j));
+                }
+                for (int j = initSize; j < vecSize; j++) initVals[j] = constDigit[0];           // no init
+                PointerPointer<LLVMValueRef> pp = new PointerPointer<>(initVals);
+                LLVMValueRef constVector = LLVMConstVector(pp, vecSize);                        //right
+
+                LLVMSetInitializer(globalVec, constVector);
+
+                globalScope.putValueRef(ctx.IDENT().getText(), globalVec);
+            }
+            return super.visitConstDef(ctx);
+        }
+
         if (ctx.L_BRACKT().isEmpty()) {   //one
             LLVMValueRef ref = LLVMBuildAlloca(builder, i32Type, ctx.IDENT().getText());
             LLVMValueRef initValueRef = this.visit(ctx.constInitVal());    //一定有初始化的过程

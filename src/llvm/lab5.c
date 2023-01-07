@@ -1,5 +1,4 @@
-int a[3];
+const int a[3]={1,2};
 int main(){
-    a[0]=1;
     return a[0];
 }
