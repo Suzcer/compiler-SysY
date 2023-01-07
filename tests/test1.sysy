@@ -1,7 +1,7 @@
 const int a[2] = {1};
-const int c = 2;
+const int c = 1;
 int main(){
-    int b = 1;
-    b = a[c];
+    int b[2] = {1,2};
+    b[c] = a[a[0]];
     return a[0];
 }
