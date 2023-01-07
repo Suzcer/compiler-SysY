@@ -375,7 +375,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
                 LLVMValueRef index = this.visit(ctx.lVal().exp(0));
                 i = (int) LLVMConstIntGetSExtValue(index);
             }
-
+            i = 0;
 //            int i = Integer.parseInt(ctx.lVal().exp().get(0).getText());
             LLVMValueRef[] refs = new LLVMValueRef[2];
             refs[0] = constDigit[0];
@@ -431,7 +431,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
                 LLVMValueRef index = this.visit(ctx.lVal().exp(0));
                 i = (int) LLVMConstIntGetSExtValue(index);
             }
-
+            i = 0;
 //            int i = Integer.parseInt(ctx.lVal().exp().get(0).getText());
             LLVMValueRef[] refs = new LLVMValueRef[2];
             refs[0] = constDigit[0];
