@@ -371,14 +371,14 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         String token = ctx.lVal().IDENT().getText();
         if (!ctx.lVal().L_BRACKT().isEmpty()) {
             int i = currentScope.getConst(ctx.lVal().exp(0).getText());
-            if (i == -1) {
-                LLVMValueRef index = this.visit(ctx.lVal().exp(0));
-                i = (int) LLVMConstIntGetSExtValue(index);
-            }
+//            if (i == -1) {
+//                LLVMValueRef index = ;
+//                i = (int) LLVMConstIntGetSExtValue(index);
+//            }
 //            int i = Integer.parseInt(ctx.lVal().exp().get(0).getText());
             LLVMValueRef[] refs = new LLVMValueRef[2];
             refs[0] = constDigit[0];
-            refs[1] = LLVMConstInt(i32Type, i, 0);
+            refs[1] = this.visit(ctx.lVal().exp(0));
 
             LLVMValueRef vectorPointer = currentScope.resolveValueRef(token);
             PointerPointer<Pointer> pp = new PointerPointer<>(refs);
@@ -426,14 +426,15 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         String token = ctx.lVal().IDENT().getText();
         if (!ctx.lVal().L_BRACKT().isEmpty()) {
             int i = currentScope.getConst(ctx.lVal().exp(0).getText());
-            if (i == -1) {
-                LLVMValueRef index = this.visit(ctx.lVal().exp(0));
-                i = (int) LLVMConstIntGetSExtValue(index);
-            }
+//            if (i == -1) {
+//                LLVMValueRef index = ;
+//                i = (int) LLVMConstIntGetSExtValue(index);
+//            }
 //            int i = Integer.parseInt(ctx.lVal().exp().get(0).getText());
             LLVMValueRef[] refs = new LLVMValueRef[2];
             refs[0] = constDigit[0];
-            refs[1] = LLVMConstInt(i32Type, i, 0);
+            refs[1] = this.visit(ctx.lVal().exp(0));
+
             LLVMValueRef vectorPointer = currentScope.resolveValueRef(token);
             PointerPointer<Pointer> pp = new PointerPointer<>(refs);
             lval = LLVMBuildGEP(builder, vectorPointer, pp, 2, "ret");
