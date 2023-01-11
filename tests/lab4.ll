@@ -7,15 +7,16 @@ mainEntry:
   store i32 0, i32* %a, align 4
   %count = alloca i32, align 4
   store i32 0, i32* %count, align 4
+  br label %whileCond
 
-whileCond:                                        ; preds = %Out
+whileCond:                                        ; preds = %Out, %mainEntry
   %a1 = load i32, i32* %a, align 4
   %LE = icmp sle i32 %a1, 0
   %compare = zext i1 %LE to i32
   %0 = icmp ne i32 %compare, 0
-  br i1 %0, label %whileTrue, label %exit
+  br i1 %0, label %whileBody, label %exit
 
-whileTrue:                                        ; preds = %whileCond
+whileBody:                                        ; preds = %whileCond
   %a2 = load i32, i32* %a, align 4
   %1 = sub i32 %a2, 1
   store i32 %1, i32* %a, align 4
@@ -32,11 +33,11 @@ exit:                                             ; preds = %If_true, %whileCond
   %count6 = load i32, i32* %count, align 4
   ret i32 %count6
 
-If_true:                                          ; preds = %whileTrue
+If_true:                                          ; preds = %whileBody
   br label %exit
   br label %Out
 
-Else:                                             ; preds = %whileTrue
+Else:                                             ; preds = %whileBody
   br label %Out
 
 Out:                                              ; preds = %Else, %If_true

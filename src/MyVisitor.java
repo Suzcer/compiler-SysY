@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Stack;
 
 import static org.bytedeco.llvm.global.LLVM.*;
+import static org.bytedeco.llvm.global.LLVM.LLVMBuildBr;
 
 
 public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
@@ -291,19 +292,20 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
     @Override
     public LLVMValueRef visitWhileStmt(SysYParser.WhileStmtContext ctx) {
         LLVMBasicBlockRef whileCond = LLVMAppendBasicBlock(currentScope.getCurFunction(), "whileCond");
-        LLVMBasicBlockRef whileTrue = LLVMAppendBasicBlock(currentScope.getCurFunction(), "whileTrue");
+        LLVMBasicBlockRef whileBody = LLVMAppendBasicBlock(currentScope.getCurFunction(), "whileBody");
         LLVMBasicBlockRef exit = LLVMAppendBasicBlock(currentScope.getCurFunction(), "exit");
+        LLVMBuildBr(builder,whileCond);
 
         //while cond block
         whileConds.push(whileCond);
         LLVMPositionBuilderAtEnd(builder, whileCond);
         LLVMValueRef cond = this.visit(ctx.cond());
         LLVMValueRef condition = LLVMBuildICmp(builder, LLVMIntNE, cond, constDigit[0], "");
-        LLVMBuildCondBr(builder, condition, whileTrue, exit);
+        LLVMBuildCondBr(builder, condition, whileBody, exit);
 
         //while true block
         whileExits.push(exit);
-        LLVMPositionBuilderAtEnd(builder, whileTrue);
+        LLVMPositionBuilderAtEnd(builder, whileBody);
         this.visit(ctx.stmt());
         LLVMBuildBr(builder, whileCond);
 
