@@ -8,6 +8,7 @@ import symtable.Scope;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Stack;
 
 import static org.bytedeco.llvm.global.LLVM.*;
 
@@ -26,6 +27,10 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
     LLVMValueRef[] constDigit;
     HashMap<Integer, String> Kinds = new HashMap<>();
     String des;
+
+    Stack<LLVMBasicBlockRef> whileConds = new Stack<>();
+
+    Stack<LLVMBasicBlockRef> whileExits = new Stack<>();
 
     public static final BytePointer error = new BytePointer();
 
@@ -281,6 +286,45 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         currentScope = currentScope.getEnclosingScope();
 
         return null;
+    }
+
+    @Override
+    public LLVMValueRef visitWhileStmt(SysYParser.WhileStmtContext ctx) {
+        LLVMBasicBlockRef whileCond = LLVMAppendBasicBlock(currentScope.getCurFunction(), "whileCond");
+        LLVMBasicBlockRef whileTrue = LLVMAppendBasicBlock(currentScope.getCurFunction(), "whileTrue");
+        LLVMBasicBlockRef exit = LLVMAppendBasicBlock(currentScope.getCurFunction(), "exit");
+
+        //while cond block
+        whileConds.push(whileCond);
+        LLVMPositionBuilderAtEnd(builder, whileCond);
+        LLVMValueRef cond = this.visit(ctx.cond());
+        LLVMValueRef condition = LLVMBuildICmp(builder, LLVMIntNE, cond, constDigit[0], "");
+        LLVMBuildCondBr(builder, condition, whileTrue, exit);
+
+        //while true block
+        whileExits.push(exit);
+        LLVMPositionBuilderAtEnd(builder, whileTrue);
+        this.visit(ctx.stmt());
+        LLVMBuildBr(builder, whileCond);
+
+        whileConds.pop();
+        whileExits.pop();
+        LLVMPositionBuilderAtEnd(builder,exit);
+        return null;
+    }
+
+    @Override
+    public LLVMValueRef visitBreakStmt(SysYParser.BreakStmtContext ctx) {
+        LLVMBasicBlockRef exit = whileExits.peek();
+        LLVMBuildBr(builder,exit);
+        return super.visitBreakStmt(ctx);
+    }
+
+    @Override
+    public LLVMValueRef visitContinueStmt(SysYParser.ContinueStmtContext ctx) {
+        LLVMBasicBlockRef cond = whileConds.peek();
+        LLVMBuildBr(builder,cond);
+        return super.visitContinueStmt(ctx);
     }
 
     @Override
