@@ -27,7 +27,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
     LLVMTypeRef voidType;
     LLVMValueRef[] constDigit;
 
-    String retTypeStr;
+    HashMap<LLVMValueRef, LLVMTypeRef> retTypes;
     HashMap<Integer, String> Kinds = new HashMap<>();
     String des;
 
@@ -244,7 +244,6 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         PointerPointer<Pointer> mainParamTypes;
         LLVMTypeRef funcType;
         LLVMTypeRef retType = ctx.funcType().getText().equals("void") ? voidType : i32Type;
-        retTypeStr = ctx.funcType().getText();
 
         if (funcFParamsCtx != null) {
             List<SysYParser.FuncFParamContext> funcFParamCtxs = funcFParamsCtx.funcFParam();
@@ -263,6 +262,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         LLVMPositionBuilderAtEnd(builder, curEntry);
 
         globalScope.putValueRef(ctx.IDENT().getText(), curFunction);
+        retTypes.put(curFunction, retType);
 
         FunctionSymbol fun = new FunctionSymbol(ctx.IDENT().getText(), currentScope);
         currentScope = fun;
@@ -297,7 +297,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         LLVMBasicBlockRef whileCond = LLVMAppendBasicBlock(currentScope.getCurFunction(), "whileCond");
         LLVMBasicBlockRef whileBody = LLVMAppendBasicBlock(currentScope.getCurFunction(), "whileBody");
         LLVMBasicBlockRef whileExit = LLVMAppendBasicBlock(currentScope.getCurFunction(), "whileExit");
-        LLVMBuildBr(builder,whileCond);
+        LLVMBuildBr(builder, whileCond);
 
         //while cond block
         whileConds.push(whileCond);
@@ -314,21 +314,21 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
 
         whileConds.pop();
         whileExits.pop();
-        LLVMPositionBuilderAtEnd(builder,whileExit);
+        LLVMPositionBuilderAtEnd(builder, whileExit);
         return null;
     }
 
     @Override
     public LLVMValueRef visitBreakStmt(SysYParser.BreakStmtContext ctx) {
         LLVMBasicBlockRef exit = whileExits.peek();
-        LLVMBuildBr(builder,exit);
+        LLVMBuildBr(builder, exit);
         return super.visitBreakStmt(ctx);
     }
 
     @Override
     public LLVMValueRef visitContinueStmt(SysYParser.ContinueStmtContext ctx) {
         LLVMBasicBlockRef cond = whileConds.peek();
-        LLVMBuildBr(builder,cond);
+        LLVMBuildBr(builder, cond);
         return super.visitContinueStmt(ctx);
     }
 
@@ -347,7 +347,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
     public LLVMValueRef visitIfStmt(SysYParser.IfStmtContext ctx) {
 
         LLVMValueRef ret = this.visit(ctx.cond());
-        LLVMValueRef If = LLVMBuildICmp(builder, LLVMIntNE, ret, LLVMConstInt(i32Type,0,0), "icmp");    // 最后统一判断
+        LLVMValueRef If = LLVMBuildICmp(builder, LLVMIntNE, ret, LLVMConstInt(i32Type, 0, 0), "icmp");    // 最后统一判断
 
         LLVMBasicBlockRef IfBody = LLVMAppendBasicBlock(currentScope.getCurFunction(), "IfBody");
         LLVMBasicBlockRef ELSE = LLVMAppendBasicBlock(currentScope.getCurFunction(), "Else");
@@ -449,7 +449,8 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         SysYParser.FuncRParamsContext funcRParamsCtx = ctx.funcRParams();
         PointerPointer<Pointer> arguments;
         LLVMValueRef retValueRef;
-        String name = retTypeStr.equals("int")? "call":"";
+        String name = retTypes.get(funcRef).equals(voidType) ? "" : "name";
+
         if (funcRParamsCtx != null) {
             List<SysYParser.ParamContext> paramCtxs = funcRParamsCtx.param();       // 有可能是 empty()
 
