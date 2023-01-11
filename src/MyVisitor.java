@@ -503,9 +503,9 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         LLVMValueRef rhs = this.visit(exps.get(1));
         LLVMValueRef ret;
         if (ctx.MUL() != null)
-            ret = LLVMBuildMul(builder, lhs, rhs, "");
+            ret = LLVMBuildMul(builder, lhs, rhs, "mul");
         else if (ctx.DIV() != null)
-            ret = LLVMBuildSDiv(builder, lhs, rhs, "");
+            ret = LLVMBuildSDiv(builder, lhs, rhs, "div");
         else
             ret = LLVMBuildSRem(builder, lhs, rhs, "rem");
         // srem指令: has sign
@@ -520,9 +520,9 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         LLVMValueRef rhs = this.visit(exps.get(1));
         LLVMValueRef ret;
         if (ctx.PLUS() != null)
-            ret = LLVMBuildAdd(builder, lhs, rhs, "");
+            ret = LLVMBuildAdd(builder, lhs, rhs, "add");
         else
-            ret = LLVMBuildSub(builder, lhs, rhs, "");
+            ret = LLVMBuildSub(builder, lhs, rhs, "sub");
         return ret;
     }
 
