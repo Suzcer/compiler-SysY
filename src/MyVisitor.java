@@ -27,7 +27,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
     LLVMTypeRef voidType;
     LLVMValueRef[] constDigit;
 
-    HashMap<LLVMValueRef, LLVMTypeRef> retTypes;
+    HashMap<LLVMValueRef, LLVMTypeRef> retTypes = new HashMap<>();
     HashMap<Integer, String> Kinds = new HashMap<>();
     String des;
 
