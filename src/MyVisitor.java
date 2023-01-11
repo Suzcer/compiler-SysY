@@ -26,6 +26,8 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
 
     LLVMTypeRef voidType;
     LLVMValueRef[] constDigit;
+
+    LLVMTypeRef retType;
     HashMap<Integer, String> Kinds = new HashMap<>();
     String des;
 
@@ -241,7 +243,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         SysYParser.FuncFParamsContext funcFParamsCtx = ctx.funcFParams();
         PointerPointer<Pointer> mainParamTypes;
         LLVMTypeRef funcType;
-        LLVMTypeRef retType = ctx.funcType().getText().equals("void") ? voidType : i32Type;
+        retType = ctx.funcType().getText().equals("void") ? voidType : i32Type;
 
         if (funcFParamsCtx != null) {
             List<SysYParser.FuncFParamContext> funcFParamCtxs = funcFParamsCtx.funcFParam();
@@ -446,6 +448,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         SysYParser.FuncRParamsContext funcRParamsCtx = ctx.funcRParams();
         PointerPointer<Pointer> arguments;
         LLVMValueRef retValueRef;
+        String name = retType.equals(i32Type)? "call":"";
         if (funcRParamsCtx != null) {
             List<SysYParser.ParamContext> paramCtxs = funcRParamsCtx.param();       // 有可能是 empty()
 
@@ -456,10 +459,10 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
             }
             arguments = new PointerPointer<>(refs);
 
-            retValueRef = LLVMBuildCall(builder, funcRef, arguments, paramCtxs.size(), "call");
+            retValueRef = LLVMBuildCall(builder, funcRef, arguments, paramCtxs.size(), name);
         } else {
             arguments = new PointerPointer<>(0);
-            retValueRef = LLVMBuildCall(builder, funcRef, arguments, 0, "call");
+            retValueRef = LLVMBuildCall(builder, funcRef, arguments, 0, name);
         }
 
         return retValueRef;
