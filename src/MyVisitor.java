@@ -459,10 +459,10 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
             }
             arguments = new PointerPointer<>(refs);
 
-            retValueRef = LLVMBuildCall(builder, funcRef, arguments, paramCtxs.size(), name);
+            retValueRef = LLVMBuildCall(builder, funcRef, arguments, paramCtxs.size(), "");
         } else {
             arguments = new PointerPointer<>(0);
-            retValueRef = LLVMBuildCall(builder, funcRef, arguments, 0, name);
+            retValueRef = LLVMBuildCall(builder, funcRef, arguments, 0, "");
         }
 
         return retValueRef;
