@@ -300,7 +300,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         whileConds.push(whileCond);
         LLVMPositionBuilderAtEnd(builder, whileCond);
         LLVMValueRef cond = this.visit(ctx.cond());
-        LLVMValueRef condition = LLVMBuildICmp(builder, LLVMIntNE, cond, constDigit[0], "");
+        LLVMValueRef condition = LLVMBuildICmp(builder, LLVMIntNE, cond, constDigit[0], "icmp");
         LLVMBuildCondBr(builder, condition, whileBody, exit);
 
         //while true block
@@ -344,7 +344,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
     public LLVMValueRef visitIfStmt(SysYParser.IfStmtContext ctx) {
 
         LLVMValueRef ret = this.visit(ctx.cond());
-        LLVMValueRef If = LLVMBuildICmp(builder, LLVMIntNE, ret, constDigit[0], "");    // 最后统一判断
+        LLVMValueRef If = LLVMBuildICmp(builder, LLVMIntNE, ret, constDigit[0], "icmp");    // 最后统一判断
 
         LLVMBasicBlockRef IfTrue = LLVMAppendBasicBlock(currentScope.getCurFunction(), "If_true");
         LLVMBasicBlockRef ELSE = LLVMAppendBasicBlock(currentScope.getCurFunction(), "Else");
