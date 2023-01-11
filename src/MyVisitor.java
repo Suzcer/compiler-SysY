@@ -344,7 +344,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
     public LLVMValueRef visitIfStmt(SysYParser.IfStmtContext ctx) {
 
         LLVMValueRef ret = this.visit(ctx.cond());
-        LLVMValueRef If = LLVMBuildICmp(builder, LLVMIntNE, ret, constDigit[0], "icmp");    // 最后统一判断
+        LLVMValueRef If = LLVMBuildICmp(builder, LLVMIntNE, ret, LLVMConstInt(i32Type,0,0), "icmp");    // 最后统一判断
 
         LLVMBasicBlockRef IfBody = LLVMAppendBasicBlock(currentScope.getCurFunction(), "IfBody");
         LLVMBasicBlockRef ELSE = LLVMAppendBasicBlock(currentScope.getCurFunction(), "Else");
@@ -392,7 +392,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
     public LLVMValueRef visitAndCond(SysYParser.AndCondContext ctx) {
         int kind = LLVMAnd;
 
-        LLVMValueRef retRef = LLVMBuildICmp(builder, kind, this.visit(ctx.cond(0)), this.visit(ctx.cond(1)), Kinds.get(kind));
+        LLVMValueRef retRef = LLVMBuildAnd(builder, this.visit(ctx.cond(0)), this.visit(ctx.cond(1)), Kinds.get(kind));
         retRef = LLVMBuildZExt(builder, retRef, i32Type, "and");
         return retRef;
     }
@@ -401,7 +401,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
     public LLVMValueRef visitOrCond(SysYParser.OrCondContext ctx) {
         int kind = LLVMOr;
 
-        LLVMValueRef retRef = LLVMBuildICmp(builder, kind, this.visit(ctx.cond(0)), this.visit(ctx.cond(1)), Kinds.get(kind));
+        LLVMValueRef retRef = LLVMBuildOr(builder, this.visit(ctx.cond(0)), this.visit(ctx.cond(1)), Kinds.get(kind));
         retRef = LLVMBuildZExt(builder, retRef, i32Type, "or");
         return retRef;
     }
