@@ -1,6 +1,4 @@
-void f(){
-
-}
 int main(){
-    if(a!=b){}
+    int b[2]={1,2};
+    int a=b[b[0]+1];
 }

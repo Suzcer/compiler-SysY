@@ -110,7 +110,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
             } else {
                 LLVMValueRef visit = this.visit(ctx.constExp(0));
                 int vecSize = (int) LLVMConstIntGetSExtValue(visit);
-                LLVMTypeRef vectorType = LLVMVectorType(i32Type, vecSize);
+                LLVMTypeRef vectorType = LLVMArrayType(i32Type, vecSize);
                 LLVMValueRef globalVec = LLVMAddGlobal(module, vectorType, ctx.IDENT().getText());  //left
 
                 LLVMValueRef[] initVals = new LLVMValueRef[vecSize];
@@ -122,7 +122,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
                 }
                 for (int j = initSize; j < vecSize; j++) initVals[j] = constDigit[0];           // no init
                 PointerPointer<LLVMValueRef> pp = new PointerPointer<>(initVals);
-                LLVMValueRef constVector = LLVMConstVector(pp, vecSize);                        //right
+                LLVMValueRef constVector = LLVMConstArray(i32Type,pp, vecSize);                        //right
 
                 LLVMSetInitializer(globalVec, constVector);
 
@@ -143,7 +143,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
             LLVMValueRef visit = this.visit(ctx.constExp(0));
             int vecSize = (int) LLVMConstIntGetSExtValue(visit);
 
-            LLVMTypeRef vectorType = LLVMVectorType(i32Type, vecSize);
+            LLVMTypeRef vectorType = LLVMArrayType(i32Type, vecSize);
             LLVMValueRef vectorPointer = LLVMBuildAlloca(builder, vectorType, ctx.IDENT().getText());
 
             if (ctx.initVal() != null) {
@@ -182,7 +182,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
             } else {
                 LLVMValueRef visit = this.visit(ctx.constExp(0));
                 int vecSize = (int) LLVMConstIntGetSExtValue(visit);
-                LLVMTypeRef vectorType = LLVMVectorType(i32Type, vecSize);
+                LLVMTypeRef vectorType = LLVMArrayType(i32Type, vecSize);
                 LLVMValueRef globalVec = LLVMAddGlobal(module, vectorType, ctx.IDENT().getText());  //left
 
                 LLVMValueRef[] initVals = new LLVMValueRef[vecSize];
@@ -194,7 +194,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
                 }
                 for (int j = initSize; j < vecSize; j++) initVals[j] = constDigit[0];           // no init
                 PointerPointer<LLVMValueRef> pp = new PointerPointer<>(initVals);
-                LLVMValueRef constVector = LLVMConstVector(pp, vecSize);                        //right
+                LLVMValueRef constVector = LLVMConstArray(i32Type, pp, vecSize);                        //right
 
                 LLVMSetInitializer(globalVec, constVector);
 
@@ -213,7 +213,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
             LLVMValueRef visit = this.visit(ctx.constExp(0));
             int vecSize = (int) LLVMConstIntGetSExtValue(visit);
 
-            LLVMTypeRef vectorType = LLVMVectorType(i32Type, vecSize);
+            LLVMTypeRef vectorType = LLVMArrayType(i32Type, vecSize);
             LLVMValueRef vectorPointer = LLVMBuildAlloca(builder, vectorType, ctx.IDENT().getText());
 
             List<SysYParser.ConstInitValContext> constInitValCtxs = ctx.constInitVal().constInitVal();
