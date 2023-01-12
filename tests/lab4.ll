@@ -3,23 +3,38 @@ source_filename = "moudle"
 
 define i32 @main() {
 mainEntry:
-  %b = alloca <2 x i32>, align 8
-  %pointer = getelementptr <2 x i32>, <2 x i32>* %b, i32 0, i32 0
-  store i32 1, i32* %pointer, align 4
-  %pointer1 = getelementptr <2 x i32>, <2 x i32>* %b, i32 0, i32 1
-  store i32 2, i32* %pointer1, align 4
-
   %a = alloca i32, align 4
-  %ret = getelementptr <2 x i32>, <2 x i32>* %b, i32 0, i32 0
-  %b2 = load i32, i32* %ret, align 4
-  %add = add i32 %b2, 1
-  %ret3 = getelementptr <2 x i32>, <2 x i32>* %b, i32 0, i32 %add
-  %b4 = load i32, i32* %ret3, align 4
-  store i32 %b4, i32* %a, align 4
-  %ret5 = getelementptr <2 x i32>, <2 x i32>* %b, i32 0, i32 0
-  %b6 = load i32, i32* %ret5, align 4
-  %add7 = add i32 %b6, 1
-  %ret8 = getelementptr <2 x i32>, <2 x i32>* %b, i32 0, i32 %add7
-  %b9 = load i32, i32* %ret8, align 4
-  ret i32 0
+  store i32 4, i32* %a, align 4
+  br label %whileCond
+
+whileCond:                                        ; preds = %IfOut, %mainEntry
+  %a1 = load i32, i32* %a, align 4
+  %icmp = icmp ne i32 %a1, 0
+  br i1 %icmp, label %whileBody, label %whileExit
+
+whileBody:                                        ; preds = %whileCond
+  %a2 = load i32, i32* %a, align 4
+  %EQ = icmp eq i32 %a2, 2
+  %eq = zext i1 %EQ to i32
+  %icmp3 = icmp ne i32 %eq, 0
+  br i1 %icmp3, label %IfBody, label %Else
+
+whileExit:                                        ; preds = %whileCond
+  %a7 = load i32, i32* %a, align 4
+  ret i32 %a7
+
+IfBody:                                           ; preds = %whileBody
+  %a4 = load i32, i32* %a, align 4
+  %sub = sub i32 %a4, 1
+  store i32 %sub, i32* %a, align 4
+  br label %IfOut
+
+Else:                                             ; preds = %whileBody
+  br label %IfOut
+
+IfOut:                                            ; preds = %Else, %IfBody
+  %a5 = load i32, i32* %a, align 4
+  %sub6 = sub i32 %a5, 1
+  store i32 %sub6, i32* %a, align 4
+  br label %whileCond
 }

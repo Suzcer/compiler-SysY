@@ -1,4 +1,10 @@
-const int a[3]={1,2};
 int main(){
-    return a[0];
+    int a=4;
+    while(a){
+        if(a==2) {
+            a=a-1;
+        }
+        a=a-1;
+    }
+    return a;
 }
