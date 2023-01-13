@@ -1,12 +1,9 @@
 int main(){
     int a=11;
     while(a){
-        if(a==2) {
-            a=a-1;
-        }else{
-            a=a-1;
+        if(a){
+            a=0;
         }
-        a=a-1;
     }
     return a;
 }

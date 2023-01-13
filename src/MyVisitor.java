@@ -265,8 +265,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         globalScope.putValueRef(ctx.IDENT().getText(), curFunction);
         retTypes.put(curFunction, retType);
 
-        FunctionSymbol fun = new FunctionSymbol(ctx.IDENT().getText(), currentScope);
-        currentScope = fun;
+        currentScope = new FunctionSymbol(ctx.IDENT().getText(), currentScope);
         currentScope.setCurFunction(curFunction);// set current function
 
         if (funcFParamsCtx != null) {
@@ -295,8 +294,6 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
 
     @Override
     public LLVMValueRef visitWhileStmt(SysYParser.WhileStmtContext ctx) {
-        LocalScope ls = new LocalScope(currentScope);
-        currentScope = ls;
 
         LLVMBasicBlockRef whileCond = LLVMAppendBasicBlock(currentScope.getCurFunction(), "whileCond");
         LLVMBasicBlockRef whileBody = LLVMAppendBasicBlock(currentScope.getCurFunction(), "whileBody");
@@ -311,6 +308,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         LLVMBuildCondBr(builder, condition, whileBody, whileExit);
 
         //while true block
+        currentScope = new LocalScope(currentScope);
         whileExits.push(whileExit);
         LLVMPositionBuilderAtEnd(builder, whileBody);
         this.visit(ctx.stmt());
@@ -351,8 +349,6 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
     @Override
     public LLVMValueRef visitIfStmt(SysYParser.IfStmtContext ctx) {
 
-        LocalScope ls = new LocalScope(currentScope);
-        currentScope = ls;
         LLVMValueRef ret = this.visit(ctx.cond());
         LLVMValueRef If = LLVMBuildICmp(builder, LLVMIntNE, ret, LLVMConstInt(i32Type, 0, 0), "icmp");    // 最后统一判断
 
@@ -361,6 +357,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         LLVMBasicBlockRef IfOut = LLVMAppendBasicBlock(currentScope.getCurFunction(), "IfOut");
         LLVMBuildCondBr(builder, If, IfBody, ELSE);
 
+        currentScope = new LocalScope(currentScope);
         LLVMPositionBuilderAtEnd(builder, IfBody);
         this.visit(ctx.stmt(0));
         LLVMBuildBr(builder, IfOut);
