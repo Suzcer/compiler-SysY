@@ -4,6 +4,7 @@ import org.bytedeco.javacpp.PointerPointer;
 import org.bytedeco.llvm.LLVM.*;
 import symtable.FunctionSymbol;
 import symtable.GlobalScope;
+import symtable.LocalScope;
 import symtable.Scope;
 
 import java.util.HashMap;
@@ -122,7 +123,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
                 }
                 for (int j = initSize; j < vecSize; j++) initVals[j] = constDigit[0];           // no init
                 PointerPointer<LLVMValueRef> pp = new PointerPointer<>(initVals);
-                LLVMValueRef constVector = LLVMConstArray(i32Type,pp, vecSize);                        //right
+                LLVMValueRef constVector = LLVMConstArray(i32Type, pp, vecSize);                        //right
 
                 LLVMSetInitializer(globalVec, constVector);
 
@@ -294,6 +295,9 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
 
     @Override
     public LLVMValueRef visitWhileStmt(SysYParser.WhileStmtContext ctx) {
+        LocalScope ls = new LocalScope(currentScope);
+        currentScope = ls;
+
         LLVMBasicBlockRef whileCond = LLVMAppendBasicBlock(currentScope.getCurFunction(), "whileCond");
         LLVMBasicBlockRef whileBody = LLVMAppendBasicBlock(currentScope.getCurFunction(), "whileBody");
         LLVMBasicBlockRef whileExit = LLVMAppendBasicBlock(currentScope.getCurFunction(), "whileExit");
@@ -315,6 +319,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         whileConds.pop();
         whileExits.pop();
         LLVMPositionBuilderAtEnd(builder, whileExit);
+        currentScope = currentScope.getEnclosingScope();
         return null;
     }
 
@@ -346,6 +351,8 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
     @Override
     public LLVMValueRef visitIfStmt(SysYParser.IfStmtContext ctx) {
 
+        LocalScope ls = new LocalScope(currentScope);
+        currentScope = ls;
         LLVMValueRef ret = this.visit(ctx.cond());
         LLVMValueRef If = LLVMBuildICmp(builder, LLVMIntNE, ret, LLVMConstInt(i32Type, 0, 0), "icmp");    // 最后统一判断
 
@@ -364,6 +371,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
 
         LLVMPositionBuilderAtEnd(builder, IfOut);
 
+        currentScope = currentScope.getEnclosingScope();
         return null;
     }
 
