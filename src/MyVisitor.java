@@ -4,7 +4,6 @@ import org.bytedeco.javacpp.PointerPointer;
 import org.bytedeco.llvm.LLVM.*;
 import symtable.FunctionSymbol;
 import symtable.GlobalScope;
-import symtable.LocalScope;
 import symtable.Scope;
 
 import java.util.HashMap;
@@ -12,7 +11,6 @@ import java.util.List;
 import java.util.Stack;
 
 import static org.bytedeco.llvm.global.LLVM.*;
-import static org.bytedeco.llvm.global.LLVM.LLVMBuildBr;
 
 
 public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
@@ -308,7 +306,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         LLVMBuildCondBr(builder, condition, whileBody, whileExit);
 
         //while true block
-        currentScope = new LocalScope(currentScope);
+//        currentScope = new LocalScope(currentScope);
         whileExits.push(whileExit);
         LLVMPositionBuilderAtEnd(builder, whileBody);
         this.visit(ctx.stmt());
@@ -317,7 +315,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         whileConds.pop();
         whileExits.pop();
         LLVMPositionBuilderAtEnd(builder, whileExit);
-        currentScope = currentScope.getEnclosingScope();
+//        currentScope = currentScope.getEnclosingScope();
         return null;
     }
 
@@ -357,7 +355,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         LLVMBasicBlockRef IfOut = LLVMAppendBasicBlock(currentScope.getCurFunction(), "IfOut");
         LLVMBuildCondBr(builder, If, IfBody, ELSE);
 
-        currentScope = new LocalScope(currentScope);
+//        currentScope = new LocalScope(currentScope);
         LLVMPositionBuilderAtEnd(builder, IfBody);
         this.visit(ctx.stmt(0));
         LLVMBuildBr(builder, IfOut);
@@ -368,7 +366,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
 
         LLVMPositionBuilderAtEnd(builder, IfOut);
 
-        currentScope = currentScope.getEnclosingScope();
+//        currentScope = currentScope.getEnclosingScope();
         return null;
     }
 
