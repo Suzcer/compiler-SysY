@@ -200,6 +200,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
                 LLVMSetInitializer(globalVec, constArray);
 
                 globalScope.define(ctx.IDENT().getText(), globalVec);
+                globalScope.putPointer(ctx.IDENT().getText());
             }
             return super.visitConstDef(ctx);
         }
@@ -234,6 +235,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
             }
 
             currentScope.define(ctx.IDENT().getText(), arrayPointer);
+            currentScope.putPointer(ctx.IDENT().getText());
         }
         return super.visitConstDef(ctx);
     }
