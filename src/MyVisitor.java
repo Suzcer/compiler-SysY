@@ -485,10 +485,12 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
                     PointerPointer<LLVMValueRef> pp = new PointerPointer<>(tmp);
                     LLVMValueRef arr = LLVMBuildGEP(builder, currentScope.resolve(token), pp, 2, "arr");// 数组作为指针传进去
                     refs[i] = arr;
+                    System.out.println("call array");
                 } else if (currentScope.getPointer(token)) {
                     LLVMValueRef arrayPointer = currentScope.resolve(token);
                     LLVMValueRef arrPtr = LLVMBuildLoad(builder, arrayPointer, "arrPtr");
                     refs[i] = arrPtr;
+                    System.out.println("call pointer");
                 } else {
                     refs[i] = this.visit(paramCtxs.get(i));
                 }

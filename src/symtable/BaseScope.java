@@ -70,7 +70,7 @@ public class BaseScope implements Scope {
         if (arrays.contains(name))
             return true;
         if (enclosingScope != null)
-            return enclosingScope.getPointer(name);
+            return enclosingScope.getArrays(name);
         return false;
     }
 

@@ -1,8 +1,17 @@
-int main() {
-    int a = 1;
-    if (a==1) {
-        return 1;
-    } else {
-        return 2;
-    }
+int f(int r){
+
 }
+int a(int b[]){
+    b[0] = 1 ;
+    return f(b[1]);
+}
+int ou[2]={1,22};
+int g(int q[]){
+    int arr[3]={1,2};
+    //arr[0] = 2;
+    a(arr);     // array
+    a(q);       // pointer
+    a(ou);      // global array
+    return 1;
+}
+int main(){}
