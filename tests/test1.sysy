@@ -5,8 +5,11 @@ int a(int b[]){
     b[0] = 1 ;
     return f(b[1]);
 }
-int main(){
+int g(int q[]){
     int arr[3]={1,2};
-    arr[0] = 2;
-    return a(arr);
+    //arr[0] = 2;
+    a(arr);
+    a(q);
+    return 1;
 }
+int main(){}

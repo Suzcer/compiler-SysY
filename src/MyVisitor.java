@@ -235,7 +235,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
             }
 
             currentScope.define(ctx.IDENT().getText(), arrayPointer);
-            currentScope.putPointer(ctx.IDENT().getText(),false);
+            currentScope.putPointer(ctx.IDENT().getText(), false);
         }
         return super.visitConstDef(ctx);
     }
@@ -475,17 +475,20 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
             List<SysYParser.ParamContext> paramCtxs = funcRParamsCtx.param();       // 有可能是 empty()
 
             LLVMValueRef[] refs = new LLVMValueRef[paramCtxs.size()];
-
+            //TODO 函数参数是指针类型，但是你传的参数是数组类型
             for (int i = 0; i < paramCtxs.size(); i++) {
                 String token = paramCtxs.get(i).getText();   //
-                if (currentScope.getPointer(token)|| currentScope.getArrays(token)) {        //数组作为指针传进去, 如果是arr[2]传进去，那就是下面的visit
+                if (currentScope.getArrays(token)) {        //数组作为指针传进去, 如果是arr[2]传进去，那就是下面的visit
                     LLVMValueRef[] tmp = new LLVMValueRef[2];
                     tmp[0] = constDigit[0];
                     tmp[1] = constDigit[0];
                     PointerPointer<LLVMValueRef> pp = new PointerPointer<>(tmp);
                     LLVMValueRef arr = LLVMBuildGEP(builder, currentScope.resolve(token), pp, 2, "arr");// 数组作为指针传进去
                     refs[i] = arr;
-//                    System.out.println("callFunc");
+                } else if (currentScope.getPointer(token)) {
+                    LLVMValueRef arrayPointer = currentScope.resolve(token);
+                    LLVMValueRef arrPtr = LLVMBuildLoad(builder, arrayPointer, "arrPtr");
+                    refs[i] = arrPtr;
                 } else {
                     refs[i] = this.visit(paramCtxs.get(i));
                 }
