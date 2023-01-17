@@ -10,9 +10,11 @@ public interface Scope {
 
     public void define(String name, LLVMValueRef valueRef);
 
-    public void putPointer(String name);
+    public void putPointer(String name,boolean flag);
 
     public boolean getPointer(String name);
+
+    public boolean getArrays(String name);
 
     public void putConst(String name,int i);
 

@@ -1,7 +1,12 @@
-int a(int arr[]){
-    return arr[0];
+int f(int r){
+
 }
-int arr[3]={1,2};
+int a(int b[]){
+    b[0] = 1 ;
+    return f(b[1]);
+}
 int main(){
+    int arr[3]={1,2};
+    arr[0] = 2;
     return a(arr);
 }

@@ -14,6 +14,8 @@ public class BaseScope implements Scope {
 
     private Set<String> arrayPointer = new HashSet<>();
 
+    private Set<String> arrays = new HashSet<>();
+
     private String name;
 
     private boolean isBuildRet = false;
@@ -53,15 +55,25 @@ public class BaseScope implements Scope {
     }
 
     @Override
-    public void putPointer(String name) {
-        arrayPointer.add(name);
+    public void putPointer(String name, boolean flag) {
+        if (flag) arrayPointer.add(name);
+        else arrays.add(name);
     }
 
     @Override
     public boolean getPointer(String name) {
-        if(arrayPointer.contains(name))
+        if (arrayPointer.contains(name))
             return true;
-        if (enclosingScope!=null)
+        if (enclosingScope != null)
+            return enclosingScope.getPointer(name);
+        return false;
+    }
+
+    @Override
+    public boolean getArrays(String name) {
+        if (arrays.contains(name))
+            return true;
+        if (enclosingScope != null)
             return enclosingScope.getPointer(name);
         return false;
     }

@@ -125,7 +125,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
                 LLVMValueRef constArray = LLVMConstArray(i32Type, pp, vecSize);                        //right
 
                 LLVMSetInitializer(globalArray, constArray);
-                globalScope.putPointer(ctx.IDENT().getText());
+                globalScope.putPointer(ctx.IDENT().getText(), false);
                 globalScope.define(ctx.IDENT().getText(), globalArray);
             }
             return super.visitVarDef(ctx);
@@ -164,7 +164,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
                 }
             }
             currentScope.define(ctx.IDENT().getText(), arrayPointer);
-            currentScope.putPointer(ctx.IDENT().getText());         //不是指针，但是可以作为指针（作为实参）
+            currentScope.putPointer(ctx.IDENT().getText(), false);         //不是指针，但是可以作为指针（作为实参）
         }
         return super.visitVarDef(ctx);
     }
@@ -200,7 +200,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
                 LLVMSetInitializer(globalVec, constArray);
 
                 globalScope.define(ctx.IDENT().getText(), globalVec);
-                globalScope.putPointer(ctx.IDENT().getText());
+                globalScope.putPointer(ctx.IDENT().getText(), false);
             }
             return super.visitConstDef(ctx);
         }
@@ -235,7 +235,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
             }
 
             currentScope.define(ctx.IDENT().getText(), arrayPointer);
-            currentScope.putPointer(ctx.IDENT().getText());
+            currentScope.putPointer(ctx.IDENT().getText(),false);
         }
         return super.visitConstDef(ctx);
     }
@@ -252,9 +252,9 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
             List<SysYParser.FuncFParamContext> funcFParamCtxs = funcFParamsCtx.funcFParam();
             mainParamTypes = new PointerPointer<>(funcFParamCtxs.size());
             for (int i = 0; i < funcFParamCtxs.size(); i++) {
-                if(!funcFParamCtxs.get(i).L_BRACKT().isEmpty()){
+                if (!funcFParamCtxs.get(i).L_BRACKT().isEmpty()) {
                     mainParamTypes = mainParamTypes.put(i, i32ArrayType);
-                }else{
+                } else {
                     mainParamTypes = mainParamTypes.put(i, i32Type);
                 }
             }
@@ -284,7 +284,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
                     value = LLVMBuildAlloca(builder, i32Type, /*pointerName:String*/key);
                 } else {
                     value = LLVMBuildAlloca(builder, i32ArrayType, "i32Array");
-                    currentScope.putPointer(key);
+                    currentScope.putPointer(key, true);
                 }
                 LLVMBuildStore(builder, argI, value);             //将数值存入该内存
                 currentScope.define(key, value);
@@ -444,11 +444,13 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
                 PointerPointer<Pointer> pp = new PointerPointer<>(refs);
                 LLVMValueRef arr = LLVMBuildLoad(builder, arrayPointer, "arr");
                 ptr = LLVMBuildGEP(builder, arr, pp, 1, "arr");   // 形参不能按此操作
+//                System.out.println("LvalExp pointer");
             } else {          // 是个实体数组
                 refs[0] = constDigit[0];
                 refs[1] = this.visit(ctx.lVal().exp(0));
                 PointerPointer<Pointer> pp = new PointerPointer<>(refs);
                 ptr = LLVMBuildGEP(builder, arrayPointer, pp, 2, "arr");   // 形参不能按此操作
+//                System.out.println("LvalExp array");
             }
             return LLVMBuildLoad(builder, ptr, token);
         } else {
@@ -475,14 +477,15 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
             LLVMValueRef[] refs = new LLVMValueRef[paramCtxs.size()];
 
             for (int i = 0; i < paramCtxs.size(); i++) {
-                String token = paramCtxs.get(i).getText();
-                if (currentScope.getPointer(token)) {        //数组作为指针传进去
+                String token = paramCtxs.get(i).getText();   //
+                if (currentScope.getPointer(token)|| currentScope.getArrays(token)) {        //数组作为指针传进去, 如果是arr[2]传进去，那就是下面的visit
                     LLVMValueRef[] tmp = new LLVMValueRef[2];
                     tmp[0] = constDigit[0];
                     tmp[1] = constDigit[0];
                     PointerPointer<LLVMValueRef> pp = new PointerPointer<>(tmp);
                     LLVMValueRef arr = LLVMBuildGEP(builder, currentScope.resolve(token), pp, 2, "arr");// 数组作为指针传进去
                     refs[i] = arr;
+//                    System.out.println("callFunc");
                 } else {
                     refs[i] = this.visit(paramCtxs.get(i));
                 }
@@ -504,19 +507,21 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         LLVMValueRef lval;
         String token = ctx.lVal().IDENT().getText();
         if (!ctx.lVal().L_BRACKT().isEmpty()) {
-//            int i = currentScope.getConst(ctx.lVal().exp(0).getText());
-//            if (i == -1) {
-//                LLVMValueRef index = ;
-//                i = (int) LLVMConstIntGetSExtValue(index);
-//            }
-//            int i = Integer.parseInt(ctx.lVal().exp().get(0).getText());
             LLVMValueRef[] refs = new LLVMValueRef[2];
-            refs[0] = constDigit[0];
-            refs[1] = this.visit(ctx.lVal().exp(0));
-
             LLVMValueRef arrayPointer = currentScope.resolve(token);
-            PointerPointer<Pointer> pp = new PointerPointer<>(refs);
-            lval = LLVMBuildGEP(builder, arrayPointer, pp, 2, "ret");
+            if (currentScope.getPointer(token)) {
+                refs[0] = this.visit(ctx.lVal().exp(0));
+                PointerPointer<LLVMValueRef> pp = new PointerPointer<>(refs);
+                LLVMValueRef arr = LLVMBuildLoad(builder, arrayPointer, "arr");
+                lval = LLVMBuildGEP(builder, arr, pp, 1, "lval");
+//                System.out.println("AssignStmt pointer");
+            } else {
+                refs[0] = constDigit[0];
+                refs[1] = this.visit(ctx.lVal().exp(0));
+                PointerPointer<Pointer> pp = new PointerPointer<>(refs);
+                lval = LLVMBuildGEP(builder, arrayPointer, pp, 2, "lval");
+//                System.out.println("AssignStmt array");
+            }
         } else {
             lval = currentScope.resolve(token);
         }
