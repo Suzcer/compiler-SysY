@@ -3,9 +3,7 @@ package symtable;
 
 import org.bytedeco.llvm.LLVM.LLVMValueRef;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 public class BaseScope implements Scope {
     private final Scope enclosingScope;
@@ -13,6 +11,9 @@ public class BaseScope implements Scope {
     private Map<String, LLVMValueRef> valueRefs = new HashMap<>();
 
     private Map<String, Integer> consts = new HashMap<>();
+
+    private Set<String> arrayPointer = new HashSet<>();
+
     private String name;
 
     private boolean isBuildRet = false;
@@ -52,18 +53,28 @@ public class BaseScope implements Scope {
     }
 
     @Override
-    public void putValueRef(String name, LLVMValueRef valueRef) {
+    public void putPointer(String name) {
+        arrayPointer.add(name);
+    }
+
+    @Override
+    public boolean getPointer(String name) {
+        return arrayPointer.contains(name);
+    }
+
+    @Override
+    public void define(String name, LLVMValueRef valueRef) {
         valueRefs.put(name, valueRef);
     }
 
     @Override
-    public LLVMValueRef resolveValueRef(String name) {
+    public LLVMValueRef resolve(String name) {
         LLVMValueRef ret = valueRefs.get(name);
         if (ret != null)
             return ret;
 
         if (enclosingScope != null)
-            return enclosingScope.resolveValueRef(name);
+            return enclosingScope.resolve(name);
 
         return null;
     }

@@ -8,13 +8,17 @@ public interface Scope {
 
     public void putScope(String name,Scope scope);
 
-    public void putValueRef(String name, LLVMValueRef valueRef);
+    public void define(String name, LLVMValueRef valueRef);
+
+    public void putPointer(String name);
+
+    public boolean getPointer(String name);
 
     public void putConst(String name,int i);
 
     public int getConst(String name);
 
-    public LLVMValueRef resolveValueRef(String name);
+    public LLVMValueRef resolve(String name);
 
     public void setIsBuildRet();
 

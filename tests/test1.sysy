@@ -1,9 +1,7 @@
+int a(int arr[]){
+    return arr[0];
+}
 int main(){
-    int a=11;
-    while(a){
-        if(a){
-            a=0;
-        }
-    }
-    return a;
+    int arr[3]={1,2};
+    return a(arr);
 }
