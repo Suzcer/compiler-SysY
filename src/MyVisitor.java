@@ -250,7 +250,11 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
             List<SysYParser.FuncFParamContext> funcFParamCtxs = funcFParamsCtx.funcFParam();
             mainParamTypes = new PointerPointer<>(funcFParamCtxs.size());
             for (int i = 0; i < funcFParamCtxs.size(); i++) {
-                mainParamTypes = mainParamTypes.put(i, i32Type);  // Only int will occur
+                if(!funcFParamCtxs.get(i).L_BRACKT().isEmpty()){
+                    mainParamTypes = mainParamTypes.put(i, i32ArrayType);
+                }else{
+                    mainParamTypes = mainParamTypes.put(i, i32Type);
+                }
             }
             funcType = LLVMFunctionType(retType, mainParamTypes, funcFParamCtxs.size(), 0);
         } else {
