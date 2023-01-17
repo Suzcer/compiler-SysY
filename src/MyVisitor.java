@@ -435,12 +435,13 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
             if(currentScope.getPointer(token)){     // 是个指针数组(形参)
                 refs[0] = this.visit(ctx.lVal().exp(0));
                 PointerPointer<Pointer> pp = new PointerPointer<>(refs);
-                ptr = LLVMBuildGEP(builder, arrayPointer, pp, 1, "ret");   // 形参不能按此操作
+                LLVMValueRef arr = LLVMBuildLoad(builder, arrayPointer, "arr");
+                ptr = LLVMBuildGEP(builder, arr, pp, 1, "arr");   // 形参不能按此操作
             }else{          // 是个实体数组
                 refs[0] = constDigit[0];
                 refs[1] = this.visit(ctx.lVal().exp(0));
                 PointerPointer<Pointer> pp = new PointerPointer<>(refs);
-                ptr = LLVMBuildGEP(builder, arrayPointer, pp, 2, "ret");   // 形参不能按此操作
+                ptr = LLVMBuildGEP(builder, arrayPointer, pp, 2, "arr");   // 形参不能按此操作
             }
             return LLVMBuildLoad(builder, ptr, token);
         } else {

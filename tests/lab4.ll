@@ -5,9 +5,10 @@ define i32 @a(i32 %0) {
 aEntry:
   %i32Array = alloca i32*, align 8
   store i32 %0, i32** %i32Array, align 4
-  %ret = getelementptr i32*, i32** %i32Array, i32 0
-  %arr = load i32*, i32** %ret, align 8
-  ret i32* %arr
+  %arr = load i32*, i32** %i32Array, align 8
+  %arr1 = getelementptr i32, i32* %arr, i32 0
+  %arr2 = load i32, i32* %arr1, align 4
+  ret i32 %arr2
 }
 
 define i32 @main() {
