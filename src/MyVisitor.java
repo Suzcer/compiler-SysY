@@ -23,7 +23,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
     LLVMBuilderRef builder;
     LLVMTypeRef i32Type;
     LLVMTypeRef voidType;
-    LLVMTypeRef i32ArrayType ;
+    LLVMTypeRef i32ArrayType;
     LLVMValueRef[] constDigit;
 
     HashMap<LLVMValueRef, LLVMTypeRef> retTypes = new HashMap<>();
@@ -57,7 +57,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
 
         voidType = LLVMVoidType();
 
-        i32ArrayType = LLVMPointerType(i32Type,0);
+        i32ArrayType = LLVMPointerType(i32Type, 0);
         initSth();
     }
 
@@ -125,7 +125,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
                 LLVMValueRef constArray = LLVMConstArray(i32Type, pp, vecSize);                        //right
 
                 LLVMSetInitializer(globalArray, constArray);
-
+                globalScope.putPointer(ctx.IDENT().getText());
                 globalScope.define(ctx.IDENT().getText(), globalArray);
             }
             return super.visitVarDef(ctx);
@@ -164,6 +164,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
                 }
             }
             currentScope.define(ctx.IDENT().getText(), arrayPointer);
+            currentScope.putPointer(ctx.IDENT().getText());         //不是指针，但是可以作为指针（作为实参）
         }
         return super.visitVarDef(ctx);
     }
@@ -276,7 +277,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
                 if (funcFParamCtxs.get(i).L_BRACKT().isEmpty()) {
                     value = LLVMBuildAlloca(builder, i32Type, /*pointerName:String*/key);
                 } else {
-                    value = LLVMBuildAlloca(builder,i32ArrayType,"i32Array");
+                    value = LLVMBuildAlloca(builder, i32ArrayType, "i32Array");
                     currentScope.putPointer(key);
                 }
                 LLVMBuildStore(builder, argI, value);             //将数值存入该内存
@@ -432,12 +433,12 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
             LLVMValueRef[] refs = new LLVMValueRef[2];
             LLVMValueRef arrayPointer = currentScope.resolve(token);
             LLVMValueRef ptr;
-            if(currentScope.getPointer(token)){     // 是个指针数组(形参)
+            if (currentScope.getPointer(token)) {     // 是个指针数组(形参)
                 refs[0] = this.visit(ctx.lVal().exp(0));
                 PointerPointer<Pointer> pp = new PointerPointer<>(refs);
                 LLVMValueRef arr = LLVMBuildLoad(builder, arrayPointer, "arr");
                 ptr = LLVMBuildGEP(builder, arr, pp, 1, "arr");   // 形参不能按此操作
-            }else{          // 是个实体数组
+            } else {          // 是个实体数组
                 refs[0] = constDigit[0];
                 refs[1] = this.visit(ctx.lVal().exp(0));
                 PointerPointer<Pointer> pp = new PointerPointer<>(refs);
@@ -468,7 +469,17 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
             LLVMValueRef[] refs = new LLVMValueRef[paramCtxs.size()];
 
             for (int i = 0; i < paramCtxs.size(); i++) {
-                refs[i] = this.visit(paramCtxs.get(i));
+                String token = paramCtxs.get(i).getText();
+                if (currentScope.getPointer(token)) {        //数组作为指针传进去
+                    LLVMValueRef[] tmp = new LLVMValueRef[2];
+                    tmp[0] = constDigit[0];
+                    tmp[1] = constDigit[0];
+                    PointerPointer<LLVMValueRef> pp = new PointerPointer<>(tmp);
+                    LLVMValueRef arr = LLVMBuildGEP(builder, currentScope.resolve(token), pp, 2, "arr");// 数组作为指针传进去
+                    refs[i] = arr;
+                } else {
+                    refs[i] = this.visit(paramCtxs.get(i));
+                }
             }
             arguments = new PointerPointer<>(refs);
 

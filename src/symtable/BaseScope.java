@@ -59,7 +59,11 @@ public class BaseScope implements Scope {
 
     @Override
     public boolean getPointer(String name) {
-        return arrayPointer.contains(name);
+        if(arrayPointer.contains(name))
+            return true;
+        if (enclosingScope!=null)
+            return enclosingScope.getPointer(name);
+        return false;
     }
 
     @Override
